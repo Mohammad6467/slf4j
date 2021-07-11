@@ -65,10 +65,18 @@
     </p>
 
     <p><span class="label">since 2.0.0</span> SLF4J API version 2.0.0
-    requires Java 8 and introduces a backward-compatible fluent logging
-    API. By backward-compatible, we mean that existing logging
+    requires Java 8 and introduces a backward-compatible fluent
+    logging API. By backward-compatible, we mean that existing logging
     frameworks do not have to be changed in order for the user to
     benefit from the <a href="#fluent">fluent logging API</a>.
+    </p>
+
+    <p><span class="label">since 2.0.0</span> SLF4J API version 2.0.0
+    relies on the <a
+    href="https://docs.oracle.com/javase/8/docs/api/java/util/ServiceLoader.html">ServiceLoader</a>
+    mechanism to find its logging backend. See the relevant <a
+    href="faq.html#changesInVersion200">FAQ entry</a> for more
+    details.
     </p>
 
     <h3 class="doAnchor" name="hello_world">Hello World</h3>
@@ -242,7 +250,8 @@ SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further detail
       pairs as separates objects. The default implementation as
       shipping in the <code>org.slf4j.Logger</code> class
       <em>prefixes</em> key-value pairs to the message.  Logging
-      backends are free to customize the output as they see fit.</p>
+      backends are free and even encouraged to offer a more
+      customizable behaviour.</p>
 
       
       <h3 class="doAnchor" name="swapping">Binding with a logging
@@ -507,7 +516,6 @@ SLF4J: See http://www.slf4j.org/codes.html#StaticLoggerBinder for further detail
       an slf4j-api vs. binding version mismatch problem, it will emit
       a warning about the suspected mismatch.
       </p>
-
 
       <h3 class="doAnchor" name="consolidate">Consolidate logging via
       SLF4J</h3>

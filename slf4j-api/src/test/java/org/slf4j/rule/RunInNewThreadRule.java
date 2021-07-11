@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2011 QOS.ch
+ * Copyright (c) 2021 QOS.ch
  * All rights reserved.
  *
  * Permission is hereby granted, free  of charge, to any person obtaining
@@ -22,27 +22,33 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-package org.slf4j.nop;
 
-import org.slf4j.ILoggerFactory;
-import org.slf4j.Logger;
-import org.slf4j.helpers.NOPLogger;
+package org.slf4j.rule;
 
-/**
- * NOPLoggerFactory is an trivial implementation of {@link
- * ILoggerFactory} which always returns the unique instance of
- * NOPLogger.
- * 
- * @author Ceki G&uuml;lc&uuml;
- */
-public class NOPLoggerFactory implements ILoggerFactory {
+import org.junit.rules.TestRule;
+import org.junit.runner.Description;
+import org.junit.runners.model.Statement;
 
-    public NOPLoggerFactory() {
-        // nothing to do
-    }
+// This class has been inspired by the article "A JUnit Rule to Run a Test in Its Own Thread"
+// published by Frank Appel, author of the book "Testing with JUnit" published by Packt publishing. 
+// 
+// See also
+// https://www.codeaffine.com/2014/07/21/a-junit-rule-to-run-a-test-in-its-own-thread/
+    
+public class RunInNewThreadRule implements TestRule {
 
-    public Logger getLogger(String name) {
-        return NOPLogger.NOP_LOGGER;
+    @Override
+    public Statement apply(Statement base, Description description) {
+        RunInNewThread desiredAnnotaton = description.getAnnotation(RunInNewThread.class);
+        
+        if(desiredAnnotaton ==  null) {
+            System.out.println("test "+ description.getMethodName() +" not annotated");
+            return base;
+        } else {
+            long timeout = desiredAnnotaton.timeout();
+            System.out.println("running "+ description.getMethodName() +" in separate tjread");
+            return new RunInNewThreadStatement(base, timeout);
+        }
     }
 
 }

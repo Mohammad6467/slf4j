@@ -25,6 +25,11 @@
 
 package org.slf4j;
 
+import static org.slf4j.event.EventConstants.DEBUG_INT;
+import static org.slf4j.event.EventConstants.ERROR_INT;
+import static org.slf4j.event.EventConstants.INFO_INT;
+import static org.slf4j.event.EventConstants.TRACE_INT;
+import static org.slf4j.event.EventConstants.WARN_INT;
 import static org.slf4j.event.Level.DEBUG;
 import static org.slf4j.event.Level.ERROR;
 import static org.slf4j.event.Level.INFO;
@@ -92,14 +97,44 @@ public interface Logger {
 
     /**
      * Make a new {@link LoggingEventBuilder} instance as appropriate for this logger and the 
-     * desired {@link Level} passed as parameter. 
+     * desired {@link Level} passed as parameter. If this Logger is disabled for the given Level, then 
+     * a {@link  NOPLoggingEventBuilder} is returned.
+     * 
      * 
      * @param level desired level for the event builder
      * @return a new {@link LoggingEventBuilder} instance as appropriate for this logger
      * @since 2.0
      */
     default public LoggingEventBuilder makeLoggingEventBuilder(Level level) {
-    	return new DefaultLoggingEventBuilder(this, level);
+        if(isEnabledForLevel(level)) {
+            return new DefaultLoggingEventBuilder(this, level);          
+        } else {
+            return NOPLoggingEventBuilder.singleton();
+        }
+    }
+
+    /**
+     * Returns whether this Logger is enabled for a given {@link Level}. 
+     * 
+     * @param level
+     * @return true if enabled, false otherwise.
+     */
+    default public boolean isEnabledForLevel(Level level) {
+        int levelInt = level.toInt();
+        switch (levelInt) {
+        case (TRACE_INT):
+            return isTraceEnabled();
+        case (DEBUG_INT):
+            return isDebugEnabled();
+        case (INFO_INT):
+            return isInfoEnabled();
+        case (WARN_INT):
+            return isWarnEnabled();
+        case (ERROR_INT):
+            return isErrorEnabled();
+        default:
+            throw new IllegalArgumentException("Level [" + level + "] not recognized.");
+        }
     }
 
     /**
@@ -191,13 +226,13 @@ public interface Logger {
      * @since 2.0
      */
     default public LoggingEventBuilder atTrace() {
-    	if(isTraceEnabled()) {
-       		return makeLoggingEventBuilder(TRACE);
-    	} else {
-    		return NOPLoggingEventBuilder.singleton();
-    	}
+        if (isTraceEnabled()) {
+            return makeLoggingEventBuilder(TRACE);
+        } else {
+            return NOPLoggingEventBuilder.singleton();
+        }
     }
-    
+
     /**
      * Log a message with the specific Marker at the TRACE level.
      *
@@ -380,8 +415,6 @@ public interface Logger {
      */
     public void debug(Marker marker, String msg, Throwable t);
 
-
-    
     /**
      * Entry point for fluent-logging for {@link org.slf4j.event.Level#DEBUG} level. 
      *  
@@ -389,13 +422,13 @@ public interface Logger {
      * @since 2.0
      */
     default public LoggingEventBuilder atDebug() {
-    	if(isDebugEnabled()) {
-    		return makeLoggingEventBuilder(DEBUG);
-    	} else {
-    		return NOPLoggingEventBuilder.singleton();
-    	}
+        if (isDebugEnabled()) {
+            return makeLoggingEventBuilder(DEBUG);
+        } else {
+            return NOPLoggingEventBuilder.singleton();
+        }
     }
-    
+
     /**
      * Is the logger instance enabled for the INFO level?
      *
@@ -528,14 +561,13 @@ public interface Logger {
      * @since 2.0
      */
     default public LoggingEventBuilder atInfo() {
-    	if(isInfoEnabled()) {
-       		return makeLoggingEventBuilder(INFO);
-    	} else {
-    		return NOPLoggingEventBuilder.singleton();
-    	}
+        if (isInfoEnabled()) {
+            return makeLoggingEventBuilder(INFO);
+        } else {
+            return NOPLoggingEventBuilder.singleton();
+        }
     }
- 
-    
+
     /**
      * Is the logger instance enabled for the WARN level?
      *
@@ -662,7 +694,6 @@ public interface Logger {
      */
     public void warn(Marker marker, String msg, Throwable t);
 
-    
     /**
      * Entry point for fluent-logging for {@link org.slf4j.event.Level#WARN} level. 
      *  
@@ -670,14 +701,13 @@ public interface Logger {
      * @since 2.0
      */
     default public LoggingEventBuilder atWarn() {
-    	if(isWarnEnabled()) {
-       		return makeLoggingEventBuilder(WARN);
-    	} else {
-    		return NOPLoggingEventBuilder.singleton();
-    	}
+        if (isWarnEnabled()) {
+            return makeLoggingEventBuilder(WARN);
+        } else {
+            return NOPLoggingEventBuilder.singleton();
+        }
     }
 
-    
     /**
      * Is the logger instance enabled for the ERROR level?
      *
@@ -804,9 +834,7 @@ public interface Logger {
      * @param t      the exception (throwable) to log
      */
     public void error(Marker marker, String msg, Throwable t);
-    
-    
-    
+
     /**
      * Entry point for fluent-logging for {@link org.slf4j.event.Level#ERROR} level. 
      *  
@@ -814,11 +842,11 @@ public interface Logger {
      * @since 2.0
      */
     default public LoggingEventBuilder atError() {
-    	if(isErrorEnabled()) {
-       		return makeLoggingEventBuilder(ERROR);
-    	} else {
-    		return NOPLoggingEventBuilder.singleton();
-    	}
+        if (isErrorEnabled()) {
+            return makeLoggingEventBuilder(ERROR);
+        } else {
+            return NOPLoggingEventBuilder.singleton();
+        }
     }
 
 }

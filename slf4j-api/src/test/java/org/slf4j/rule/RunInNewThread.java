@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2011 QOS.ch
+ * Copyright (c) 2021 QOS.ch
  * All rights reserved.
  *
  * Permission is hereby granted, free  of charge, to any person obtaining
@@ -22,42 +22,18 @@
  * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  *
  */
-package org.slf4j.nop;
 
-import java.util.Map;
+package org.slf4j.rule;
 
-import org.slf4j.spi.MDCAdapter;
+import java.lang.annotation.ElementType;
+import java.lang.annotation.Retention;
+import java.lang.annotation.RetentionPolicy;
+import java.lang.annotation.Target;
 
-/**
- * This adapter is an empty implementation of the {@link MDCAdapter} interface.
- * It is used for all logging systems which do not support mapped
- * diagnostic contexts such as JDK14, simple and NOP. 
- * 
- * @author Ceki G&uuml;lc&uuml;
- * 
- * @since 1.4.1
- */
-public class NOPMDCAdapter implements MDCAdapter {
 
-    public void clear() {
-    }
-
-    public String get(String key) {
-        return null;
-    }
-
-    public void put(String key, String val) {
-    }
-
-    public void remove(String key) {
-    }
-
-    public Map<String, String> getCopyOfContextMap() {
-        return null;
-    }
-
-    public void setContextMap(Map<String, String> contextMap) {
-        // NOP
-    }
-
+@Retention(RetentionPolicy.RUNTIME)
+@Target({ElementType.METHOD})
+public @interface RunInNewThread {
+    static final long DEFAULT_TIMEOUT = 1000L;
+    public long timeout() default DEFAULT_TIMEOUT;
 }

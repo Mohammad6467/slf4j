@@ -39,6 +39,93 @@
 
    <hr noshade="noshade" size="1"/>
 
+   <h3>Xth of July, 2021 - Release of SLF4J 1.7.32</h3>
+
+   <p>In the slf4j-simple module, <code>SimpleLogger</code> now caters
+   for current access. This fixes <a
+   href="https://jira.qos.ch/browse/SLF4J-515">SLF4J-515</a> as
+   reported by Tibor Digana.
+   </p>
+   
+   <hr noshade="noshade" size="1"/>
+
+   <h3>2nd of July, 2021 - Release of SLF4J 2.0.0-alpha2</h3>
+
+   <p class="highlight">The the 2.0.x series requires Java&nbsp;8 and
+   adds a backward-compatible <a
+   href="manual.html#fluent">fluent logging api</a>.
+   <br/>   <br/>
+   Moreover, SLF4J has been modularized per <a
+   href="http://openjdk.java.net/projects/jigsaw/spec/">JPMS/Jigsaw</a>
+   specificaton. The resulting internal changes are <a class="big
+   bold" href="faq.html#changesInVersion18">detailed</a> in the FAQ
+   page.
+   </p>
+
+   <p>SLF4J version 2.0.0 requires Java 8. It builds upon the 1.8.x
+   series and adds a backward-compatible <a
+   href="manual.html#fluent">fluent logging api</a>.  By
+   backward-compatible, we mean that existing logging frameworks do
+   not have to be changed for the user to benefit from the fluent
+   logging API.
+   </p>
+        
+   <p>&bull; Fixed important bug in the fluent API. The
+   <code>LoggingEventBuilder.addArgument(Supplier)</code> method now
+   takes <code>Supplier&lt;?&gt;</code> and not
+   <code>Supplier&lt;Object&gt;</code>. This problem was reported in
+   <a href="https://jira.qos.ch/browse/SLF4J-485">SLF4J-485</a> by
+   Christoffer Hammarstr&ouml;m who also provided a relevant test case.</p>
+ 
+ 
+   <p>&bull; Added support for the native OSGi service loader mechanism as
+   described in <a
+   href="https://jira.qos.ch/browse/SLF4J-457">SLF4J-457</a>. Our
+   gratidude goes to Bj&ouml;rn Kautler for ptoviding the relevant PR.</p>
+
+   <p>&bull;Fixed inccorect location information computation when fluent API
+   is used. This issue was reported in <a
+   href="https://jira.qos.ch/browse/SLF4J-511">SLF4J-511</a> by Ralph
+   Goers.
+   </p>
+
+   <p>Printing methods in the <code>LoggerWrapper</code> class part of
+   slf4j-ext spuriously called <code>MessageFormatter.format()</code>
+   method before delegating logging to the wrapped logger. However,
+   the wrapped logger invoked <code>MessageFormatter.format()</code> a
+   second time. The second call is usually innocuous unless the String
+   representation of any of the arguments contain the anchor
+   character, for example if an argument is an empty
+   <code>Set</code>. The spurious calls to
+   <code>MessageFormatter.format()</code> were removed fixing <a
+   href="https://jira.qos.ch/browse/SLF4J-421">SLF4J-421</a> and <a
+   href="https://jira.qos.ch/browse/SLF4J-287">SLF4J-287</a>.</p>
+
+   <p>&bull; The implementations of the
+   <code>MDCAdapter.setContextMap()</code> methods shipping with SLF4J
+   now cater for a null argument. This fixes <a
+   href="https://jira.qos.ch/browse/SLF4J-414">SLF4J-414</a>. Both
+   Alexei Orischenko and Kengo TODA kindly provided PRs for this
+   issue.</p>
+
+   
+   
+   
+   <h3>18th of June, 2021 - Release of SLF4J 1.7.31</h3>
+
+   <p>In the jcl-over-slf4j module avoid <code>Object</code> to
+   <code>String</code> conversion. This issue was reported in <a
+   href="https://jira.qos.ch/browse/SLF4J-497">SLF4J-497</a> by Antonio
+   Tomac who also provided the relevant PR.</p>
+ 
+   <p>In the log4j-over-slf4j module added empty constructors for
+   ConsoleAppender. This fixes <a
+   href="https://jira.qos.ch/browse/SLF4J-514">SLF4J-514</a> as
+   requested by Simon F (bratkartoffel).
+
+   
+   <hr noshade="noshade" size="1"/>
+
    <h3>16th of December, 2019 - Release of SLF4J 1.7.30</h3>
 
    <p>Fixed a memory leak in case of no provided binding and
@@ -77,15 +164,17 @@
    not have to be changed for the user to benefit from the fluent
    logging API.
    </p>
+
    
    <p>&bull; Refactored the fluent-api in
    <code>org.slf4j.Logger</code> interface to ease the work required
    by downstream implementations.
    </p>
 
-   <p>&bull; By default, when using the fluent-API
+   <p>&bull; <em>By default</em>, when using the fluent-API
    <code>org.slf4j.Logger</code> will merge into the message part any
-   marker and key-value data passed to it.</p>
+   marker and key-value data passed to it. Non default implementation
+   are encouraged to implement a more customizable behavior.</p>
 
    <p>&bull; Fix the double back-end initializatoin problem reported
    in <a href="https://jira.qos.ch/browse/SLF4J-463">SLF4J-463</a> by
@@ -2275,12 +2364,6 @@
   <h3>13 April 2005 - start of work on SLF4J project</h3>
 
   <p>Launch of the SLF4J project. Work has begun on the web-site, svn
-  repositories as well as the source code.
-  </p>
-
-
-  <script src="templates/footer.js" type="text/javascript"></script>
-
-</div>
-</body>
-</html>
+  repositories as well as the source code.  </p> <script
+  src="templates/footer.js" type="text/javascript"></script> </div>
+  </body> </html>

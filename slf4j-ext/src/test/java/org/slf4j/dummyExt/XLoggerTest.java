@@ -45,7 +45,7 @@ public class XLoggerTest {
 
         // start from a clean slate for each test
 
-        listAppender = new ListAppender(); 
+        listAppender = new ListAppender();
         listAppender.extractLocationInfo = true;
         log4jRoot = org.apache.log4j.Logger.getRootLogger();
         log4jRoot.addAppender(listAppender);
@@ -150,6 +150,17 @@ public class XLoggerTest {
             assertEquals(this.getClass().getName(), li.getClassName());
             assertEquals("" + (line + 1), li.getLineNumber());
         }
-
     }
+    
+    @Test
+    public void testNoDoubleSubstitution_Bug421() {
+        XLogger logger = XLoggerFactory.getXLogger("UnitTest");
+        logger.error("{},{}", "foo", "[{}]");
+        verify((LoggingEvent) listAppender.list.get(0), "foo,[{}]");
+        
+        logger.error("{},{}", "[{}]", "foo");
+        verify((LoggingEvent) listAppender.list.get(1), "[{}],foo");
+    }
+    
+    
 }

@@ -66,6 +66,7 @@ public class InvocationTest {
 
     @Test
     public void test1() {
+
         Logger logger = LoggerFactory.getLogger("test1");
         logger.debug("Hello world.");
         assertEquals(1, listAppender.list.size());
@@ -185,6 +186,24 @@ public class InvocationTest {
         assertNull(MDC.get("k"));
         assertEquals("va", MDC.get("ka"));
         assertEquals("vb", MDC.get("kb"));
+    }
+
+    @Test
+    public void testCallerInfo() {
+        Logger logger = LoggerFactory.getLogger("testMarker");
+        listAppender.extractLocationInfo = true;
+        logger.debug("hello");
+        LoggingEvent event = listAppender.list.get(0);
+        assertEquals(this.getClass().getName(), event.getLocationInformation().getClassName());
+    }
+
+    @Test
+    public void testCallerInfoWithFluentAPI() {
+        Logger logger = LoggerFactory.getLogger("testMarker");
+        listAppender.extractLocationInfo = true;
+        logger.atDebug().log("hello");
+        LoggingEvent event = listAppender.list.get(0);
+        assertEquals(this.getClass().getName(), event.getLocationInformation().getClassName());
     }
 
 }
