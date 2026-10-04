@@ -1,28 +1,47 @@
 <?xml version="1.0" encoding="UTF-8"?>
+<!--
+  ~ Copyright (C) 2004-2026, QOS.ch (Switzerland)
+  ~ All rights reserved.
+  ~
+  ~  Permission is hereby granted, free  of charge, to any person obtaining
+  ~  a  copy  of this  software  and  associated  documentation files  (the
+  ~  "Software"), to  deal in  the Software without  restriction, including
+  ~  without limitation  the rights to  use, copy, modify,  merge, publish,
+  ~  distribute,  sublicense, and/or sell  copies of  the Software,  and to
+  ~  permit persons to whom the Software  is furnished to do so, subject to
+  ~  the following conditions:
+  ~
+  ~  The  above  copyright  notice  and  this permission  notice  shall  be
+  ~  included in all copies or substantial portions of the Software.
+  ~
+  ~  THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
+  ~  EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
+  ~  MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
+  ~  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+  ~  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+  ~  OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
+  ~  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
+  -->
+
 <project xmlns="http://maven.apache.org/POM/4.0.0" xmlns:xsi="http://www.w3.org/2001/XMLSchema-instance"
          xsi:schemaLocation="http://maven.apache.org/POM/4.0.0 http://maven.apache.org/xsd/maven-4.0.0.xsd">
 
   <modelVersion>4.0.0</modelVersion>
 
   <groupId>org.slf4j</groupId>
-  <artifactId>slf4j-parent</artifactId>
-  <version>2.0.0-alpha2-SNAPSHOT</version>
-
+  <artifactId>slf4j-bom</artifactId>
+  <version>3.0.0-rc0-SNAPSHOT</version>
   <packaging>pom</packaging>
-  <name>SLF4J</name>
-  <description>Top SLF4J project pom.xml file</description>
-  <url>http://www.slf4j.org</url>
 
-  <organization>
-    <name>QOS.ch</name>
-    <url>http://www.qos.ch</url>
-  </organization>
-  <inceptionYear>2005</inceptionYear>
+  <url>http://www.slf4j.org</url>
+  
+  <name>SLF4J BOM</name>
+  <description>SLF4J project BOM</description>
 
   <licenses>
     <license>
-      <name>MIT License</name>
-      <url>http://www.opensource.org/licenses/mit-license.php</url>
+      <name>MIT</name>
+      <url>https://opensource.org/license/mit</url>
       <distribution>repo</distribution>
     </license>
   </licenses>
@@ -32,60 +51,30 @@
     <connection>scm:git:https://github.com/qos-ch/slf4j.git</connection>
   </scm>  
 
-  <properties>
-    <latest.stable.version>1.7.30</latest.stable.version>
-    <!-- java.util.ServiceLoader requires Java 6 -->
-    <jdk.version>8</jdk.version>
-    <maven.compiler.source>${jdk.version}</maven.compiler.source>
-    <maven.compiler.target>${jdk.version}</maven.compiler.target>
-    <project.build.sourceEncoding>UTF-8</project.build.sourceEncoding>
-    <project.build.resourceEncoding>UTF-8</project.build.resourceEncoding>
-    <project.reporting.outputEncoding>UTF-8</project.reporting.outputEncoding>
-    <!-- used in integration testing -->
-    <slf4j.api.minimum.compatible.version>1.6.0</slf4j.api.minimum.compatible.version>
-    <cal10n.version>0.8.1</cal10n.version>
-    <log4j.version>1.2.17</log4j.version>
-    <logback.version>1.2.3</logback.version>
-    <junit.version>4.12</junit.version>
-    <maven-site-plugin.version>3.7.1</maven-site-plugin.version>
-    <compiler-plugin.version>3.8.0</compiler-plugin.version>
-    <maven-javadoc-plugin.version>3.1.0</maven-javadoc-plugin.version>
-    <maven-source-plugin.version>3.0.1</maven-source-plugin.version>
-    <maven-deploy-plugin.version>2.8.2</maven-deploy-plugin.version>
-  </properties>
-
-  <developers>
-    <developer>
-      <id>ceki</id>
-      <name>Ceki Gulcu</name>
-      <email>ceki@qos.ch</email>
-    </developer>
-  </developers>
-
+  
+  <!-- Inspired by Improving the Maven Bill of Materials (BOM) Pattern  -->
+  <!-- https://www.garretwilson.com/blog/2023/06/14/improve-maven-bom-pattern -->
   <modules>
+    <module>parent</module>
     <module>slf4j-api</module>
+    <module>slf4j-testing</module>
     <module>slf4j-simple</module>
     <module>slf4j-nop</module>
     <module>slf4j-jdk14</module>
+    <module>slf4j-jdk-platform-logging</module>
     <module>slf4j-log4j12</module>
+    <module>slf4j-reload4j</module>
     <module>slf4j-ext</module>
     <module>jcl-over-slf4j</module>
+    <module>jcl-over-slf4j-blackbox</module>
     <module>log4j-over-slf4j</module>
+    <module>log4j-over-slf4j-blackbox</module>
     <module>jul-to-slf4j</module>
+    <module>jul-to-slf4j-blackbox</module>
     <module>osgi-over-slf4j</module>
     <module>integration</module>
-    <module>slf4j-site</module>
-    <!--<module>slf4j-migrator</module> -->
+    <module>slf4j-migrator</module>
   </modules>
-
-  <dependencies>
-    <dependency>
-      <groupId>junit</groupId>
-      <artifactId>junit</artifactId>
-      <version>${junit.version}</version>
-      <scope>test</scope>
-    </dependency>
-  </dependencies>
 
   <dependencyManagement>
     <dependencies>
@@ -98,327 +87,196 @@
 
       <dependency>
         <groupId>org.slf4j</groupId>
-        <artifactId>slf4j-jdk14</artifactId>
+        <artifactId>slf4j-simple</artifactId>
         <version>${project.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>log4j</groupId>
-        <artifactId>log4j</artifactId>
-        <version>${log4j.version}</version>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-nop</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk14</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+
+
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-jdk-platform-logging</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-log4j12</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-reload4j</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-ext</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jcl-over-slf4j</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>log4j-over-slf4j</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>jul-to-slf4j</artifactId>
+        <version>${project.version}</version>
+      </dependency>
+      
+      <dependency>
+        <groupId>org.slf4j</groupId>
+        <artifactId>osgi-over-slf4j</artifactId>
+        <version>${project.version}</version>
       </dependency>
 
       <dependency>
-        <groupId>ch.qos.cal10n</groupId>
-        <artifactId>cal10n-api</artifactId>
-        <version>${cal10n.version}</version>
+        <groupId>org.slf4j</groupId>
+        <artifactId>slf4j-scoped-mdc</artifactId>
+        <version>${project.version}</version>
       </dependency>
 
     </dependencies>
   </dependencyManagement>
 
+  <distributionManagement>
+
+    <repository>
+      <id>sonatype-nexus-staging</id>
+      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
+    </repository>
+
+  </distributionManagement>
+
+  <developers>
+    <developer>
+      <id>ceki</id>
+      <name>Ceki Gulcu</name>
+      <email>ceki@qos.ch</email>
+    </developer>
+  </developers>
+
   <build>
-    <extensions>
-      <extension>
-        <groupId>org.apache.maven.wagon</groupId>
-        <artifactId>wagon-ssh</artifactId>
-        <version>2.10</version>
-      </extension>
-    </extensions>
-
-    <resources>
-      <resource>
-        <directory>${project.basedir}/src/main/resources</directory>
-        <filtering>true</filtering>
-      </resource>
-    </resources>
-
-    <pluginManagement>
-      <plugins>
-
-        <plugin>
-          <groupId>org.codehaus.mojo</groupId>
-          <artifactId>animal-sniffer-maven-plugin</artifactId>
-          <version>1.14</version>
-          <configuration>
-            <signature>
-              <groupId>org.codehaus.mojo.signature</groupId>
-              <artifactId>java16</artifactId>
-              <version>1.0</version>
-            </signature>
-          </configuration>
-        </plugin>
-
-        <plugin>
-          <groupId>org.apache.maven.plugins</groupId>
-          <artifactId>maven-deploy-plugin</artifactId>
-          <version>${maven-deploy-plugin.version}</version>
-        </plugin>
-
-      </plugins>
-    </pluginManagement>
-
     <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-compiler-plugin</artifactId>
-        <version>${compiler-plugin.version}</version>
-        <executions>
-
-          <execution>
-            <id>default-compile</id>
-            <goals>
-              <goal>compile</goal>
-            </goals>
-            <configuration>
-              <source>${jdk.version}</source>
-              <target>${jdk.version}</target>
-            </configuration>
-          </execution> 
-
-          <execution>                      
-            <id>module-compile</id>
-            <phase>compile</phase>
-            <goals>
-              <goal>compile</goal>
-            </goals>          
-            <configuration>
-              <release>9</release>
-              <compileSourceRoots>
-                <compileSourceRoot>${project.basedir}/src/main/java9</compileSourceRoot>
-              </compileSourceRoots>
-              <outputDirectory>${project.build.outputDirectory}/META-INF/versions/9</outputDirectory>
-              <compilerArgs>
-                <arg>--patch-module</arg>
-                <arg>${module-name}=${project.build.outputDirectory}</arg>
-              </compilerArgs>
-            </configuration>
-          </execution>
-
-
-
-        </executions>
-
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jar-plugin</artifactId>
-        <version>2.3.1</version>
-        <configuration>
-          <archive>
-            <manifestEntries>
-              <Bundle-Version>${parsedVersion.osgiVersion}</Bundle-Version>
-              <Bundle-Description>${project.description}</Bundle-Description>
-              <X-Compile-Source-JDK>${maven.compiler.source}</X-Compile-Source-JDK>
-              <X-Compile-Target-JDK>${maven.compiler.target}</X-Compile-Target-JDK>
-              <Implementation-Version>${project.version}</Implementation-Version>
-              <Multi-Release>true</Multi-Release>
-            </manifestEntries>
-            <manifestFile>${project.build.outputDirectory}/META-INF/MANIFEST.MF</manifestFile>
-          </archive>
-          <skipIfEmpty>true</skipIfEmpty>
-        </configuration>
-      </plugin>
- 
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-surefire-plugin</artifactId>
-        <version>2.19.1</version>
-        <configuration>
-          <forkCount>1</forkCount>
-          <reuseForks>false</reuseForks>
-          <reportFormat>plain</reportFormat>
-          <trimStackTrace>false</trimStackTrace>
-          <excludes>
-            <exclude>**/AllTest.java</exclude>
-            <exclude>**/PackageTest.java</exclude>
-          </excludes>
-        </configuration>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-source-plugin</artifactId>
-        <version>${maven-source-plugin.version}</version>
-        <executions>
-          <execution>
-            <phase>package</phase>
-            <goals>
-              <goal>jar</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <!-- as suggested in http://jira.qos.ch/browse/SLF4J-143 -->
-      <plugin>
-        <groupId>org.codehaus.mojo</groupId>
-        <artifactId>build-helper-maven-plugin</artifactId>
-        <version>1.7</version>
-        <executions>
-          <execution>
-            <id>parse-version</id>
-            <goals>
-              <goal>parse-version</goal>
-            </goals>
-          </execution>
-        </executions>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-site-plugin</artifactId>
-        <version>${maven-site-plugin.version}</version>
-      </plugin>
-
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-project-info-reports-plugin</artifactId>
-        <version>3.0.0</version>
-      </plugin>
-    </plugins>
-  
-  </build>
-
-  <reporting>
-    <plugins>
-      <plugin>
-        <groupId>org.apache.maven.plugins</groupId>
-        <artifactId>maven-jxr-plugin</artifactId>
-        <version>2.3</version>
-        <configuration>
-          <aggregate>true</aggregate>
-          <javadocDir>target/site/apidocs/</javadocDir>
-        </configuration>
-      </plugin>
-      
       <plugin>
         <groupId>org.apache.maven.plugins</groupId>
         <artifactId>maven-javadoc-plugin</artifactId>
-        <version>${maven-javadoc-plugin.version}</version>
+        <version>3.6.3</version>
+        <executions>
+          <execution>
+            <id>default-cli</id>
+            <goals>
+              <goal>aggregate</goal>
+            </goals>
+          </execution>
+        </executions>
         <configuration>
-          <linkJavadoc>true</linkJavadoc>
+          <verbose>true</verbose>
+          <skippedModules>
+            slf4j-testing,slf4j-jdk-platform-logging,jcl-over-slf4j-blackbox,log4j-over-slf4j-blackbox,jul-to-slf4j-blackbox,slf4j-migrator,osgi-over-slf4j
+          </skippedModules>
+          <detectLinks>true</detectLinks>
+          <doctitle>SLF4J project modules 2.1.0-alpha1</doctitle>
+          <windowtitle>SLF4J javadoc</windowtitle>
+          <bottom><![CDATA[Copyright  &copy; 2005-{currentYear} QOS.CH Sarl. All rights reserved]]></bottom>
           <linksource>true</linksource>
-          <aggregate>true</aggregate>
           <additionalOptions>
             <additionalOption>-Xdoclint:none</additionalOption>
           </additionalOptions>
-          <excludePackageNames>org.slf4j.migrator:org.slf4j.migrator.*</excludePackageNames>
-          <sourceFileExcludes>
-            <sourceFileExclude>**/module-info.java</sourceFileExclude>
-          </sourceFileExcludes>
-          
           <groups>
             <group>
-              <title>SLF4J packages</title>
-              <packages>org.slf4j:org.slf4j.*</packages>
+              <title>SLF4J API packages</title>
+              <packages>org.slf4j:org.slf4j.spi:org.slf4j.event:org.slf4j.helpers</packages>
             </group>
-            
+
+            <group>
+              <title>slf4j-simple package</title>
+              <packages>org.slf4j.simple</packages>
+            </group>
+
+            <group>
+              <title>slf4j-nop package</title>
+              <packages>org.slf4j.nop</packages>
+            </group>
+
+
+            <group>
+              <title>slf4j-jdk14 package</title>
+              <packages>org.slf4j.jul</packages>
+            </group>
+
+
+            <group>
+              <title>slf4j-reload4j package</title>
+              <packages>org.slf4j.reload4j</packages>
+            </group>
+
+
             <group>
               <title>SLF4J extensions</title>
               <packages>
                 org.slf4j.cal10n:org.slf4j.profiler:org.slf4j.ext:org.slf4j.instrumentation:org.slf4j.agent
               </packages>
             </group>
-            
+
             <group>
               <title>Jakarta Commons Logging packages</title>
               <packages>org.apache.commons.*</packages>
             </group>
-            
+
             <group>
               <title>java.util.logging (JUL) to SLF4J bridge</title>
               <packages>org.slf4j.bridge</packages>
             </group>
-            
+
             <group>
-              <title>Apache log4j</title>
+              <title>log4j-over-slf4j redirection</title>
               <packages>org.apache.log4j:org.apache.log4j.*</packages>
             </group>
           </groups>
+
         </configuration>
       </plugin>
-      
     </plugins>
-  </reporting>
+
+  </build>
 
   <profiles>
-    <profile>
-      <id>skipTests</id>
-      <properties>
-        <maven.test.skip>true</maven.test.skip>
-      </properties>
-    </profile>
 
+    <!--
+      slf4j-scoped-mdc requires java.lang.ScopedValue, which is final as of
+      Java 25. Keep it out of the reactor on older build JDKs.
+    -->
     <profile>
-      <id>javadocjar</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-javadoc-plugin</artifactId>
-            <version>2.10.4</version>
-            <executions>
-              <execution>
-                <id>attach-javadocs</id>
-                <goals>
-                  <goal>jar</goal>
-                </goals>
-              </execution>
-            </executions>
-            <configuration>
-              <additionalparam>-Xdoclint:none</additionalparam>
-              <sourceFileExcludes>
-                <sourceFileExclude>**/module-info.java</sourceFileExclude>
-              </sourceFileExcludes>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-
-    <profile>
-      <id>license</id>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>com.google.code.maven-license-plugin</groupId>
-            <artifactId>maven-license-plugin</artifactId>
-            <configuration>
-              <header>src/main/licenseHeader.txt</header>
-              <quiet>false</quiet>
-              <failIfMissing>true</failIfMissing>
-              <aggregate>true</aggregate>
-              <includes>
-                <include>src/**/*.java</include>
-              </includes>
-              <useDefaultExcludes>true</useDefaultExcludes>
-              <useDefaultMapping>true</useDefaultMapping>
-              <properties>
-                <year>1999</year>
-              </properties>
-              <headerDefinitions>
-                <headerDefinition>src/main/javadocHeaders.xml</headerDefinition>
-              </headerDefinitions>
-            </configuration>
-          </plugin>
-        </plugins>
-      </build>
-
-      <pluginRepositories>
-        <pluginRepository>
-          <id>mc-release</id>
-          <name>Local Maven repository of releases</name>
-          <url>http://mc-repo.googlecode.com/svn/maven2/releases</url>
-          <snapshots>
-            <enabled>false</enabled>
-          </snapshots>
-          <releases>
-            <enabled>true</enabled>
-          </releases>
-        </pluginRepository>
-      </pluginRepositories>
+      <id>slf4j-scoped-mdc</id>
+      <activation>
+        <jdk>[25,)</jdk>
+      </activation>
+      <modules>
+        <module>slf4j-scoped-mdc</module>
+      </modules>
     </profile>
 
     <profile>
@@ -443,62 +301,6 @@
       </build>
     </profile>
 
-    <!--
-    <profile>
-      <id>travis</id>
-      <activation>
-        <property>
-          <name>env.TRAVIS</name>
-          <value>true</value>
-        </property>
-      </activation>
-      <build>
-        <plugins>
-          <plugin>
-            <groupId>org.apache.maven.plugins</groupId>
-            <artifactId>maven-toolchains-plugin</artifactId>
-            <version>1.1</version>
-            <executions>
-              <execution>
-                <id>toolchain</id>
-                <phase>none</phase>
-              </execution>
-            </executions>
-          </plugin>
-        </plugins>
-      </build>
-    </profile>
-    -->
   </profiles>
-
-  <pluginRepositories>
-    <pluginRepository>
-         <id>apache-snapshot-repo</id>
-         <name>apache-snapshot-repo</name>
-         <url>https://repository.apache.org/content/groups/snapshots/</url>
-         <releases>
-           <enabled>false</enabled>
-         </releases>
-         <snapshots>
-           <enabled>true</enabled>
-         </snapshots>
-
-    </pluginRepository>
-  </pluginRepositories>
-
-  <distributionManagement>
-    <site>
-      <id>qos_ch</id>
-      <url>scp://yvo.qos.ch/var/www/www.slf4j.org/htdocs/</url>
-    </site>
-
-    <repository>
-      <!--<id>pixie</id>-->
-      <!--<url>scp://pixie.qos.ch/var/mvnrepo/</url>-->
-      <id>sonatype-nexus-staging</id>
-      <url>https://oss.sonatype.org/service/local/staging/deploy/maven2/</url>
-    </repository>
-
-  </distributionManagement>
-
+  
 </project>

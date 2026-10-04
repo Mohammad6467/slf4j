@@ -1,5 +1,5 @@
 /**
- * Copyright (c) 2004-2012 QOS.ch
+ * Copyright (c) 2004-2022 QOS.ch Sarl (Switzerland)
  * All rights reserved.
  *
  * Permission is hereby granted, free of charge, to any person obtaining
@@ -84,7 +84,11 @@ import org.slf4j.spi.LocationAwareLogger;
  * <li><code>org.slf4j.simpleLogger.showThreadName</code> -Set to
  * <code>true</code> if you want to output the current thread name. Defaults to
  * <code>true</code>.</li>
- *
+ * 
+ * <li>(since version 1.7.33 and 2.0.0-alpha6) <code>org.slf4j.simpleLogger.showThreadId</code> - 
+ * If you would like to output the current thread id, then set to
+ * <code>true</code>. Defaults to <code>false</code>.</li>
+ * 
  * <li><code>org.slf4j.simpleLogger.showLogName</code> - Set to
  * <code>true</code> if you want the Logger instance name to be included in
  * output messages. Defaults to <code>true</code>.</li>
@@ -145,294 +149,327 @@ import org.slf4j.spi.LocationAwareLogger;
  */
 public class SimpleLogger extends LegacyAbstractLogger {
 
-	private static final long serialVersionUID = -632788891211436180L;
+    private static final long serialVersionUID = -632788891211436180L;
 
-	private static long START_TIME = System.currentTimeMillis();
+    private static final long START_TIME = System.currentTimeMillis();
 
-	protected static final int LOG_LEVEL_TRACE = LocationAwareLogger.TRACE_INT;
-	protected static final int LOG_LEVEL_DEBUG = LocationAwareLogger.DEBUG_INT;
-	protected static final int LOG_LEVEL_INFO = LocationAwareLogger.INFO_INT;
-	protected static final int LOG_LEVEL_WARN = LocationAwareLogger.WARN_INT;
-	protected static final int LOG_LEVEL_ERROR = LocationAwareLogger.ERROR_INT;
+    protected static final int LOG_LEVEL_TRACE = LocationAwareLogger.TRACE_INT;
+    protected static final int LOG_LEVEL_DEBUG = LocationAwareLogger.DEBUG_INT;
+    protected static final int LOG_LEVEL_INFO = LocationAwareLogger.INFO_INT;
+    protected static final int LOG_LEVEL_WARN = LocationAwareLogger.WARN_INT;
+    protected static final int LOG_LEVEL_ERROR = LocationAwareLogger.ERROR_INT;
 
-	static char SP = ' ';
-
-	// The OFF level can only be used in configuration files to disable logging.
-	// It has
-	// no printing method associated with it in o.s.Logger interface.
-	protected static final int LOG_LEVEL_OFF = LOG_LEVEL_ERROR + 10;
-
-	private static boolean INITIALIZED = false;
-	static SimpleLoggerConfiguration CONFIG_PARAMS = null;
-
-	static void lazyInit() {
-		if (INITIALIZED) {
-			return;
-		}
-		INITIALIZED = true;
-		init();
-	}
-
-	// external software might be invoking this method directly. Do not rename
-	// or change its semantics.
-	static void init() {
-		CONFIG_PARAMS = new SimpleLoggerConfiguration();
-		CONFIG_PARAMS.init();
-	}
-
-	/** The current log level */
-	protected int currentLogLevel = LOG_LEVEL_INFO;
-	/** The short name of this simple log instance */
-	private transient String shortLogName = null;
-
-	/**
-	 * All system properties used by <code>SimpleLogger</code> start with this
-	 * prefix
-	 */
-	public static final String SYSTEM_PREFIX = "org.slf4j.simpleLogger.";
-
-	public static final String LOG_KEY_PREFIX = SimpleLogger.SYSTEM_PREFIX + "log.";
-
-	public static final String CACHE_OUTPUT_STREAM_STRING_KEY = SimpleLogger.SYSTEM_PREFIX + "cacheOutputStream";
-
-	public static final String WARN_LEVEL_STRING_KEY = SimpleLogger.SYSTEM_PREFIX + "warnLevelString";
-
-	public static final String LEVEL_IN_BRACKETS_KEY = SimpleLogger.SYSTEM_PREFIX + "levelInBrackets";
-
-	public static final String LOG_FILE_KEY = SimpleLogger.SYSTEM_PREFIX + "logFile";
-
-	public static final String SHOW_SHORT_LOG_NAME_KEY = SimpleLogger.SYSTEM_PREFIX + "showShortLogName";
-
-	public static final String SHOW_LOG_NAME_KEY = SimpleLogger.SYSTEM_PREFIX + "showLogName";
-
-	public static final String SHOW_THREAD_NAME_KEY = SimpleLogger.SYSTEM_PREFIX + "showThreadName";
-
-	public static final String DATE_TIME_FORMAT_KEY = SimpleLogger.SYSTEM_PREFIX + "dateTimeFormat";
-
-	public static final String SHOW_DATE_TIME_KEY = SimpleLogger.SYSTEM_PREFIX + "showDateTime";
-
-	public static final String DEFAULT_LOG_LEVEL_KEY = SimpleLogger.SYSTEM_PREFIX + "defaultLogLevel";
-
-	/**
-	 * Package access allows only {@link SimpleLoggerFactory} to instantiate
-	 * SimpleLogger instances.
-	 */
-	SimpleLogger(String name) {
-		this.name = name;
-
-		String levelString = recursivelyComputeLevelString();
-		if (levelString != null) {
-			this.currentLogLevel = SimpleLoggerConfiguration.stringToLevel(levelString);
-		} else {
-			this.currentLogLevel = CONFIG_PARAMS.defaultLogLevel;
-		}
-	}
-
-	String recursivelyComputeLevelString() {
-		String tempName = name;
-		String levelString = null;
-		int indexOfLastDot = tempName.length();
-		while ((levelString == null) && (indexOfLastDot > -1)) {
-			tempName = tempName.substring(0, indexOfLastDot);
-			levelString = CONFIG_PARAMS.getStringProperty(SimpleLogger.LOG_KEY_PREFIX + tempName, null);
-			indexOfLastDot = String.valueOf(tempName).lastIndexOf(".");
-		}
-		return levelString;
-	}
+    static char SP = ' ';
+    static final String TID_PREFIX = "tid=";
 
 
-	void write(StringBuilder buf, Throwable t) {
-		PrintStream targetStream = CONFIG_PARAMS.outputChoice.getTargetPrintStream();
+    // The OFF level can only be used in configuration files to disable logging.
+    // It has
+    // no printing method associated with it in o.s.Logger interface.
+    protected static final int LOG_LEVEL_OFF = LOG_LEVEL_ERROR + 10;
 
-		targetStream.println(buf.toString());
-		writeThrowable(t, targetStream);
-		targetStream.flush();
-	}
+    private static boolean INITIALIZED = false;
+    static final SimpleLoggerConfiguration CONFIG_PARAMS = new SimpleLoggerConfiguration();
+    
+    static void lazyInit() {
+        if (INITIALIZED) {
+            return;
+        }
+        INITIALIZED = true;
+        init();
+    }
 
-	protected void writeThrowable(Throwable t, PrintStream targetStream) {
-		if (t != null) {
-			t.printStackTrace(targetStream);
-		}
-	}
+    // external software might be invoking this method directly. Do not rename
+    // or change its semantics.
+    static void init() {
+        CONFIG_PARAMS.init();
+    }
 
-	private String getFormattedDate() {
-		Date now = new Date();
-		String dateText;
-		synchronized (CONFIG_PARAMS.dateFormatter) {
-			dateText = CONFIG_PARAMS.dateFormatter.format(now);
-		}
-		return dateText;
-	}
+    /** The current log level */
+    protected int currentLogLevel = LOG_LEVEL_INFO;
+    /** The short name of this simple log instance */
+    private transient String shortLogName = null;
 
-	private String computeShortName() {
-		return name.substring(name.lastIndexOf(".") + 1);
-	}
+    /**
+     * All system properties used by <code>SimpleLogger</code> start with this
+     * prefix
+     */
+    public static final String SYSTEM_PREFIX = "org.slf4j.simpleLogger.";
 
-//    /**
-//     * For formatted messages, first substitute arguments and then log.
-//     *
-//     * @param level
-//     * @param format
-//     * @param arg1
-//     * @param arg2
-//     */
-//    private void formatAndLog(int level, String format, Object arg1, Object arg2) {
-//        if (!isLevelEnabled(level)) {
-//            return;
-//        }
-//        FormattingTuple tp = MessageFormatter.format(format, arg1, arg2);
-//        log(level, tp.getMessage(), tp.getThrowable());
-//    }
+    public static final String LOG_KEY_PREFIX = SimpleLogger.SYSTEM_PREFIX + "log.";
 
-//    /**
-//     * For formatted messages, first substitute arguments and then log.
-//     *
-//     * @param level
-//     * @param format
-//     * @param arguments
-//     *            a list of 3 ore more arguments
-//     */
-//    private void formatAndLog(int level, String format, Object... arguments) {
-//        if (!isLevelEnabled(level)) {
-//            return;
-//        }
-//        FormattingTuple tp = MessageFormatter.arrayFormat(format, arguments);
-//        log(level, tp.getMessage(), tp.getThrowable());
-//    }
+    public static final String CACHE_OUTPUT_STREAM_STRING_KEY = SimpleLogger.SYSTEM_PREFIX + "cacheOutputStream";
 
-	/**
-	 * Is the given log level currently enabled?
-	 *
-	 * @param logLevel is this level enabled?
-	 * @return whether the logger is enabled for the given level
-	 */
-	protected boolean isLevelEnabled(int logLevel) {
-		// log level are numerically ordered so can use simple numeric
-		// comparison
-		return (logLevel >= currentLogLevel);
-	}
+    public static final String WARN_LEVEL_STRING_KEY = SimpleLogger.SYSTEM_PREFIX + "warnLevelString";
 
-	/** Are {@code trace} messages currently enabled? */
-	public boolean isTraceEnabled() {
-		return isLevelEnabled(LOG_LEVEL_TRACE);
-	}
+    public static final String LEVEL_IN_BRACKETS_KEY = SimpleLogger.SYSTEM_PREFIX + "levelInBrackets";
 
-	/** Are {@code debug} messages currently enabled? */
-	public boolean isDebugEnabled() {
-		return isLevelEnabled(LOG_LEVEL_DEBUG);
-	}
+    public static final String LOG_FILE_KEY = SimpleLogger.SYSTEM_PREFIX + "logFile";
 
-	/** Are {@code info} messages currently enabled? */
-	public boolean isInfoEnabled() {
-		return isLevelEnabled(LOG_LEVEL_INFO);
-	}
+    public static final String SHOW_SHORT_LOG_NAME_KEY = SimpleLogger.SYSTEM_PREFIX + "showShortLogName";
 
-	/** Are {@code warn} messages currently enabled? */
-	public boolean isWarnEnabled() {
-		return isLevelEnabled(LOG_LEVEL_WARN);
-	}
+    public static final String SHOW_LOG_NAME_KEY = SimpleLogger.SYSTEM_PREFIX + "showLogName";
 
-	/** Are {@code error} messages currently enabled? */
-	public boolean isErrorEnabled() {
-		return isLevelEnabled(LOG_LEVEL_ERROR);
-	}
+    public static final String SHOW_THREAD_NAME_KEY = SimpleLogger.SYSTEM_PREFIX + "showThreadName";
 
-	/**
-	 * This is our internal implementation for logging regular (non-parameterized)
-	 * log messages.
-	 *
-	 * @param level   One of the LOG_LEVEL_XXX constants defining the log level
-	 * @param message The message itself
-	 * @param t       The exception whose stack trace should be logged
-	 */
-	@Override
-	protected void handleNormalizedLoggingCall(Level level, Marker marker, String messagePattern, Object[] arguments,
-			Throwable t) {
+    public static final String SHOW_THREAD_ID_KEY = SimpleLogger.SYSTEM_PREFIX + "showThreadId";
+    
+    public static final String DATE_TIME_FORMAT_KEY = SimpleLogger.SYSTEM_PREFIX + "dateTimeFormat";
 
-		List<Marker> markers = null;
-		
-		if(marker != null) {
-			markers = new ArrayList<Marker>();
-			markers.add(marker);
-		}
-		
-		innerHandleNormalizedLoggingCall(level, markers, messagePattern, arguments, t);
-	}
+    public static final String SHOW_DATE_TIME_KEY = SimpleLogger.SYSTEM_PREFIX + "showDateTime";
 
-	private void innerHandleNormalizedLoggingCall(Level level, List<Marker> markers, String messagePattern, Object[] arguments,
-			Throwable t) {
+    public static final String DEFAULT_LOG_LEVEL_KEY = SimpleLogger.SYSTEM_PREFIX + "defaultLogLevel";
 
-		StringBuilder buf = new StringBuilder(32);
+    /**
+     * Protected access allows only {@link SimpleLoggerFactory} and also derived classes to instantiate
+     * SimpleLogger instances.
+     */
+    protected SimpleLogger(String name) {
+        this.name = name;
 
-		// Append date-time if so configured
-		if (CONFIG_PARAMS.showDateTime) {
-			if (CONFIG_PARAMS.dateFormatter != null) {
-				buf.append(getFormattedDate());
-				buf.append(' ');
-			} else {
-				buf.append(System.currentTimeMillis() - START_TIME);
-				buf.append(' ');
-			}
-		}
+        String levelString = recursivelyComputeLevelString();
+        if (levelString != null) {
+            this.currentLogLevel = SimpleLoggerConfiguration.stringToLevel(levelString);
+        } else {
+            this.currentLogLevel = CONFIG_PARAMS.defaultLogLevel;
+        }
+    }
 
-		// Append current thread name if so configured
-		if (CONFIG_PARAMS.showThreadName) {
-			buf.append('[');
-			buf.append(Thread.currentThread().getName());
-			buf.append("] ");
-		}
+    String recursivelyComputeLevelString() {
+        String tempName = name;
+        String levelString = null;
+        int indexOfLastDot = tempName.length();
+        while ((levelString == null) && (indexOfLastDot > -1)) {
+            tempName = tempName.substring(0, indexOfLastDot);
+            levelString = CONFIG_PARAMS.getStringProperty(SimpleLogger.LOG_KEY_PREFIX + tempName, null);
+            indexOfLastDot = String.valueOf(tempName).lastIndexOf(".");
+        }
+        return levelString;
+    }
 
-		if (CONFIG_PARAMS.levelInBrackets)
-			buf.append('[');
+    /**
+     * To avoid intermingling of log messages and associated stack traces, the two
+     * operations are done in a synchronized block.
+     * 
+     * @param buf
+     * @param t
+     */
+    void write(StringBuilder buf, Throwable t) {
+        PrintStream targetStream = CONFIG_PARAMS.outputChoice.getTargetPrintStream();
 
-		// Append a readable representation of the log level
-		String levelStr = level.name();
-		buf.append(levelStr);
-		if (CONFIG_PARAMS.levelInBrackets)
-			buf.append(']');
-		buf.append(' ');
+        synchronized (CONFIG_PARAMS) {
+            targetStream.println(buf.toString());
+            writeThrowable(t, targetStream);
+            targetStream.flush();
+        } 
 
-		// Append the name of the log instance if so configured
-		if (CONFIG_PARAMS.showShortLogName) {
-			if (shortLogName == null)
-				shortLogName = computeShortName();
-			buf.append(String.valueOf(shortLogName)).append(" - ");
-		} else if (CONFIG_PARAMS.showLogName) {
-			buf.append(String.valueOf(name)).append(" - ");
-		}
+    }
 
-		if(markers != null) {
-			buf.append(SP);
-			for(Marker marker: markers) {
-				buf.append(marker.getName()).append(SP);		
-			}
-		}
-		
-		String formattedMessage = MessageFormatter.basicArrayFormat(messagePattern, arguments);
+    protected void writeThrowable(Throwable t, PrintStream targetStream) {
+        if (t != null) {
+            t.printStackTrace(targetStream);
+        }
+    }
 
-		// Append the message
-		buf.append(formattedMessage);
+    private String getFormattedDate() {
+        Date now = new Date();
+        String dateText;
+        synchronized (CONFIG_PARAMS.dateFormatter) {
+            dateText = CONFIG_PARAMS.dateFormatter.format(now);
+        }
+        return dateText;
+    }
 
-		write(buf, t);
-	}
+    private String computeShortName() {
+        return name.substring(name.lastIndexOf(".") + 1);
+    }
 
-	
-	public void log(LoggingEvent event) {
-		int levelInt = event.getLevel().toInt();
+    // /**
+    // * For formatted messages, first substitute arguments and then log.
+    // *
+    // * @param level
+    // * @param format
+    // * @param arg1
+    // * @param arg2
+    // */
+    // private void formatAndLog(int level, String format, Object arg1, Object arg2) {
+    // if (!isLevelEnabled(level)) {
+    // return;
+    // }
+    // FormattingTuple tp = MessageFormatter.format(format, arg1, arg2);
+    // log(level, tp.getMessage(), tp.getThrowable());
+    // }
 
-		if (!isLevelEnabled(levelInt)) {
-			return;
-		}
-		
-		NormalizedParameters np = NormalizedParameters.normalize(event);
-		
-		innerHandleNormalizedLoggingCall(event.getLevel(), event.getMarkers(), np.getMessage(), np.getArguments(), event.getThrowable());
-	}
+    // /**
+    // * For formatted messages, first substitute arguments and then log.
+    // *
+    // * @param level
+    // * @param format
+    // * @param arguments
+    // * a list of 3 ore more arguments
+    // */
+    // private void formatAndLog(int level, String format, Object... arguments) {
+    // if (!isLevelEnabled(level)) {
+    // return;
+    // }
+    // FormattingTuple tp = MessageFormatter.arrayFormat(format, arguments);
+    // log(level, tp.getMessage(), tp.getThrowable());
+    // }
 
-	@Override
-	protected String getFullyQualifiedCallerName() {
-		return null;
-	}
+    /**
+     * Is the given log level currently enabled?
+     *
+     * @param logLevel is this level enabled?
+     * @return whether the logger is enabled for the given level
+     */
+    protected boolean isLevelEnabled(int logLevel) {
+        // log level are numerically ordered so can use simple numeric
+        // comparison
+        return (logLevel >= currentLogLevel);
+    }
 
+    /** Are {@code trace} messages currently enabled? */
+    public boolean isTraceEnabled() {
+        return isLevelEnabled(LOG_LEVEL_TRACE);
+    }
+
+    /** Are {@code debug} messages currently enabled? */
+    public boolean isDebugEnabled() {
+        return isLevelEnabled(LOG_LEVEL_DEBUG);
+    }
+
+    /** Are {@code info} messages currently enabled? */
+    public boolean isInfoEnabled() {
+        return isLevelEnabled(LOG_LEVEL_INFO);
+    }
+
+    /** Are {@code warn} messages currently enabled? */
+    public boolean isWarnEnabled() {
+        return isLevelEnabled(LOG_LEVEL_WARN);
+    }
+
+    /** Are {@code error} messages currently enabled? */
+    public boolean isErrorEnabled() {
+        return isLevelEnabled(LOG_LEVEL_ERROR);
+    }
+
+    /**
+     * SimpleLogger's implementation of
+     * {@link org.slf4j.helpers.AbstractLogger#handleNormalizedLoggingCall(Level, Marker, String, Object[], Throwable) AbstractLogger#handleNormalizedLoggingCall}
+     * }
+     *
+     * @param level the SLF4J level for this event
+     * @param marker  The marker to be used for this event, may be null.
+     * @param messagePattern The message pattern which will be parsed and formatted
+     * @param arguments  the array of arguments to be formatted, may be null
+     * @param throwable  The exception whose stack trace should be logged, may be null
+     */
+    @Override
+    protected void handleNormalizedLoggingCall(Level level, Marker marker, String messagePattern, Object[] arguments, Throwable throwable) {
+
+        List<Marker> markers = null;
+
+        if (marker != null) {
+            markers = new ArrayList<>();
+            markers.add(marker);
+        }
+
+        innerHandleNormalizedLoggingCall(level, markers, messagePattern, arguments, throwable);
+    }
+
+    private void innerHandleNormalizedLoggingCall(Level level, List<Marker> markers, String messagePattern, Object[] arguments, Throwable t) {
+
+        StringBuilder buf = new StringBuilder(32);
+
+        // Append date-time if so configured
+        if (CONFIG_PARAMS.showDateTime) {
+            if (CONFIG_PARAMS.dateFormatter != null) {
+                buf.append(getFormattedDate());
+                buf.append(SP);
+            } else {
+                buf.append(System.currentTimeMillis() - START_TIME);
+                buf.append(SP);
+            }
+        }
+
+        // Append current thread name if so configured
+        if (CONFIG_PARAMS.showThreadName) {
+            buf.append('[');
+            buf.append(Thread.currentThread().getName());
+            buf.append("] ");
+        }
+        
+        if (CONFIG_PARAMS.showThreadId) {
+            buf.append(TID_PREFIX);
+            buf.append(Thread.currentThread().getId());
+            buf.append(SP);
+        }
+
+        if (CONFIG_PARAMS.levelInBrackets)
+            buf.append('[');
+
+        // Append a readable representation of the log level
+        String levelStr = renderLevel(level.toInt());
+        buf.append(levelStr);
+        if (CONFIG_PARAMS.levelInBrackets)
+            buf.append(']');
+        buf.append(SP);
+
+        // Append the name of the log instance if so configured
+        if (CONFIG_PARAMS.showShortLogName) {
+            if (shortLogName == null)
+                shortLogName = computeShortName();
+            buf.append(String.valueOf(shortLogName)).append(" - ");
+        } else if (CONFIG_PARAMS.showLogName) {
+            buf.append(String.valueOf(name)).append(" - ");
+        }
+
+        if (markers != null) {
+            buf.append(SP);
+            for (Marker marker : markers) {
+                buf.append(marker.getName()).append(SP);
+            }
+        }
+
+        String formattedMessage = MessageFormatter.basicArrayFormat(messagePattern, arguments);
+
+        // Append the message
+        buf.append(formattedMessage);
+
+        write(buf, t);
+    }
+
+    protected String renderLevel(int levelInt) {
+        switch (levelInt) {
+            case LOG_LEVEL_TRACE:
+                return "TRACE";
+            case LOG_LEVEL_DEBUG:
+                return("DEBUG");
+            case LOG_LEVEL_INFO:
+                return "INFO";
+            case LOG_LEVEL_WARN:
+                return CONFIG_PARAMS.warnLevelString;
+            case LOG_LEVEL_ERROR:
+                return "ERROR";
+        }
+        throw new IllegalStateException("Unrecognized level ["+levelInt+"]");
+    }
+
+    public void log(LoggingEvent event) {
+        int levelInt = event.getLevel().toInt();
+
+        if (!isLevelEnabled(levelInt)) {
+            return;
+        }
+
+        NormalizedParameters np = NormalizedParameters.normalize(event);
+
+        innerHandleNormalizedLoggingCall(event.getLevel(), event.getMarkers(), np.getMessage(), np.getArguments(), event.getThrowable());
+    }
+
+    @Override
+    protected String getFullyQualifiedCallerName() {
+        return null;
+    }
 
 }

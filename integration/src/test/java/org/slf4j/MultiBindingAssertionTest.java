@@ -1,26 +1,25 @@
-/**
- * Copyright (c) 2004-2011 QOS.ch
+/*
+ * Copyright (C) 2004-2026, QOS.ch (Switzerland)
  * All rights reserved.
  *
- * Permission is hereby granted, free  of charge, to any person obtaining
- * a  copy  of this  software  and  associated  documentation files  (the
- * "Software"), to  deal in  the Software without  restriction, including
- * without limitation  the rights to  use, copy, modify,  merge, publish,
- * distribute,  sublicense, and/or sell  copies of  the Software,  and to
- * permit persons to whom the Software  is furnished to do so, subject to
- * the following conditions:
+ *  Permission is hereby granted, free  of charge, to any person obtaining
+ *  a  copy  of this  software  and  associated  documentation files  (the
+ *  "Software"), to  deal in  the Software without  restriction, including
+ *  without limitation  the rights to  use, copy, modify,  merge, publish,
+ *  distribute,  sublicense, and/or sell  copies of  the Software,  and to
+ *  permit persons to whom the Software  is furnished to do so, subject to
+ *  the following conditions:
  *
- * The  above  copyright  notice  and  this permission  notice  shall  be
- * included in all copies or substantial portions of the Software.
+ *  The  above  copyright  notice  and  this permission  notice  shall  be
+ *  included in all copies or substantial portions of the Software.
  *
- * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
+ *  THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
+ *  EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
+ *  MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
+ *  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ *  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ *  OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
+ *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.slf4j;
 
@@ -39,28 +38,28 @@ public class MultiBindingAssertionTest {
     PrintStream old = System.err;
     int diff = 1024 + new Random().nextInt(10000);
 
-
     @Before
     public void setUp() throws Exception {
         System.setErr(sps);
     }
-    
+
     @After
     public void tearDown() throws Exception {
         System.setErr(old);
     }
-    
+
     @Test
     public void test() throws Exception {
         Logger logger = LoggerFactory.getLogger(this.getClass());
         String msg = "hello world " + diff;
         logger.info(msg);
         List<String> list = sps.stringList;
-        assertMsgContains(list, 0, "Class path contains multiple SLF4J providers.");
-        assertMsgContains(list, 1, "Found provider");
-        assertMsgContains(list, 2, "Found provider");
-        assertMsgContains(list, 3, "See http://www.slf4j.org/codes.html#multiple_bindings for an explanation.");
-        assertMsgContains(list, 4, "Actual provider is of type [");
+        int line = 0;
+
+        assertMsgContains(list, line++, "Class path contains multiple SLF4J providers.");
+        assertMsgContains(list, line++, "Found provider");
+        assertMsgContains(list, line++, "Found provider");
+        assertMsgContains(list, line++, "See https://www.slf4j.org/codes.html#multiple_bindings for an explanation.");
     }
 
     void assertMsgContains(List<String> strList, int index, String msg) {

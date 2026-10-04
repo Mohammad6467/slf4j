@@ -1,33 +1,31 @@
-/**
- * Copyright (c) 2004-2011 QOS.ch
+/*
+ * Copyright (C) 2004-2026, QOS.ch (Switzerland)
  * All rights reserved.
  *
- * Permission is hereby granted, free  of charge, to any person obtaining
- * a  copy  of this  software  and  associated  documentation files  (the
- * "Software"), to  deal in  the Software without  restriction, including
- * without limitation  the rights to  use, copy, modify,  merge, publish,
- * distribute,  sublicense, and/or sell  copies of  the Software,  and to
- * permit persons to whom the Software  is furnished to do so, subject to
- * the following conditions:
+ *  Permission is hereby granted, free  of charge, to any person obtaining
+ *  a  copy  of this  software  and  associated  documentation files  (the
+ *  "Software"), to  deal in  the Software without  restriction, including
+ *  without limitation  the rights to  use, copy, modify,  merge, publish,
+ *  distribute,  sublicense, and/or sell  copies of  the Software,  and to
+ *  permit persons to whom the Software  is furnished to do so, subject to
+ *  the following conditions:
  *
- * The  above  copyright  notice  and  this permission  notice  shall  be
- * included in all copies or substantial portions of the Software.
+ *  The  above  copyright  notice  and  this permission  notice  shall  be
+ *  included in all copies or substantial portions of the Software.
  *
- * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
+ *  THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
+ *  EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
+ *  MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
+ *  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ *  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ *  OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
+ *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.slf4j.migrator;
 
 import java.io.File;
 import java.io.IOException;
 import java.util.ArrayList;
-import java.util.Iterator;
 import java.util.List;
 
 import javax.swing.SwingUtilities;
@@ -38,18 +36,16 @@ import org.slf4j.migrator.line.RuleSet;
 
 public class ProjectConverter {
 
-    private RuleSet ruleSet;
+    private final RuleSet ruleSet;
     private List<ConversionException> exception;
 
     ProgressListener progressListener;
 
-    public static void main(String[] args) throws IOException {
-        SwingUtilities.invokeLater(new Runnable() {
-            public void run() {
-                MigratorFrame inst = new MigratorFrame();
-                inst.setLocationRelativeTo(null);
-                inst.setVisible(true);
-            }
+    public static void main(String[] args) {
+        SwingUtilities.invokeLater(() -> {
+            MigratorFrame inst = new MigratorFrame();
+            inst.setLocationRelativeTo(null);
+            inst.setVisible(true);
         });
     }
 
@@ -83,9 +79,7 @@ public class ProjectConverter {
      */
     private void scanFileList(List<File> lstFiles) {
         progressListener.onFileScanBegin();
-        Iterator<File> itFile = lstFiles.iterator();
-        while (itFile.hasNext()) {
-            File currentFile = itFile.next();
+        for (File currentFile : lstFiles) {
             progressListener.onFileScan(currentFile);
             scanFile(currentFile);
         }
@@ -108,16 +102,14 @@ public class ProjectConverter {
 
     public void addException(ConversionException exc) {
         if (exception == null) {
-            exception = new ArrayList<ConversionException>();
+            exception = new ArrayList<>();
         }
         exception.add(exc);
     }
 
     public void printException() {
         if (exception != null) {
-            Iterator<ConversionException> iterator = exception.iterator();
-            while (iterator.hasNext()) {
-                ConversionException exc = (ConversionException) iterator.next();
+            for (ConversionException exc : exception) {
                 exc.print();
             }
             exception = null;

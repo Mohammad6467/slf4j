@@ -1,35 +1,33 @@
-/**
- * Copyright (c) 2004-2011 QOS.ch
+/*
+ * Copyright (C) 2004-2026, QOS.ch (Switzerland)
  * All rights reserved.
  *
- * Permission is hereby granted, free  of charge, to any person obtaining
- * a  copy  of this  software  and  associated  documentation files  (the
- * "Software"), to  deal in  the Software without  restriction, including
- * without limitation  the rights to  use, copy, modify,  merge, publish,
- * distribute,  sublicense, and/or sell  copies of  the Software,  and to
- * permit persons to whom the Software  is furnished to do so, subject to
- * the following conditions:
+ *  Permission is hereby granted, free  of charge, to any person obtaining
+ *  a  copy  of this  software  and  associated  documentation files  (the
+ *  "Software"), to  deal in  the Software without  restriction, including
+ *  without limitation  the rights to  use, copy, modify,  merge, publish,
+ *  distribute,  sublicense, and/or sell  copies of  the Software,  and to
+ *  permit persons to whom the Software  is furnished to do so, subject to
+ *  the following conditions:
  *
- * The  above  copyright  notice  and  this permission  notice  shall  be
- * included in all copies or substantial portions of the Software.
+ *  The  above  copyright  notice  and  this permission  notice  shall  be
+ *  included in all copies or substantial portions of the Software.
  *
- * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
+ *  THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
+ *  EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
+ *  MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
+ *  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ *  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ *  OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
+ *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.slf4j;
 
 import java.io.Closeable;
+import java.util.Deque;
 import java.util.Map;
 
-import org.slf4j.helpers.BasicMDCAdapter;
-import org.slf4j.helpers.NOPMDCAdapter;
-import org.slf4j.helpers.Util;
+import org.slf4j.helpers.*;
 import org.slf4j.spi.MDCAdapter;
 import org.slf4j.spi.SLF4JServiceProvider;
 
@@ -64,8 +62,9 @@ import org.slf4j.spi.SLF4JServiceProvider;
 public class MDC {
 
     static final String NULL_MDCA_URL = "http://www.slf4j.org/codes.html#null_MDCA";
+    private static final String MDC_ADAPTER_CANNOT_BE_NULL_MESSAGE = "MDCAdapter cannot be null. See also " + NULL_MDCA_URL;
     static final String NO_STATIC_MDC_BINDER_URL = "http://www.slf4j.org/codes.html#no_static_mdc_binder";
-    static MDCAdapter mdcAdapter;
+    static MDCAdapter MDC_ADAPTER;
 
     /**
      * An adapter to remove the key when done.
@@ -85,14 +84,30 @@ public class MDC {
     private MDC() {
     }
 
-    static {
+    private static MDCAdapter getMDCAdapterGivenByProvider() {
         SLF4JServiceProvider provider = LoggerFactory.getProvider();
-        if (provider != null) {
-            mdcAdapter = provider.getMDCAdapter();
+        if(provider != null) {
+            // If you wish to change the mdc adapter, setting the MDC.MDCAdapter variable might be insufficient.
+            // Keep in mind that the provider *might* perform additional internal mdcAdapter assignments that
+            // you would also need to replicate/adapt.
+
+            // obtain and attach the MDCAdapter from the provider
+
+            final MDCAdapter anAdapter = provider.getMDCAdapter();
+            emitTemporaryMDCAdapterWarningIfNeeded(provider);
+            return anAdapter;
         } else {
-            Util.report("Failed to find provider.");
-            Util.report("Defaulting to no-operation MDCAdapter implementation.");
-            mdcAdapter = new NOPMDCAdapter();
+            Reporter.error("Failed to find provider.");
+            Reporter.error("Defaulting to no-operation MDCAdapter implementation.");
+            return new NOPMDCAdapter();
+        }
+    }
+
+    private static void emitTemporaryMDCAdapterWarningIfNeeded(SLF4JServiceProvider provider) {
+        boolean isSubstitute = provider instanceof SubstituteServiceProvider;
+        if(isSubstitute) {
+            Reporter.info("Temporary mdcAdapter given by SubstituteServiceProvider.");
+            Reporter.info("This mdcAdapter will be replaced after backend initialization has completed.");
         }
     }
 
@@ -115,10 +130,10 @@ public class MDC {
         if (key == null) {
             throw new IllegalArgumentException("key parameter cannot be null");
         }
-        if (mdcAdapter == null) {
-            throw new IllegalStateException("MDCAdapter cannot be null. See also " + NULL_MDCA_URL);
+        if (getMDCAdapter() == null) {
+            throw new IllegalStateException(MDC_ADAPTER_CANNOT_BE_NULL_MESSAGE);
         }
-        mdcAdapter.put(key, val);
+        getMDCAdapter().put(key, val);
     }
 
     /**
@@ -171,10 +186,8 @@ public class MDC {
             throw new IllegalArgumentException("key parameter cannot be null");
         }
 
-        if (mdcAdapter == null) {
-            throw new IllegalStateException("MDCAdapter cannot be null. See also " + NULL_MDCA_URL);
-        }
-        return mdcAdapter.get(key);
+        mdcAdapterNullCheck();
+        return getMDCAdapter().get(key);
     }
 
     /**
@@ -192,20 +205,16 @@ public class MDC {
             throw new IllegalArgumentException("key parameter cannot be null");
         }
 
-        if (mdcAdapter == null) {
-            throw new IllegalStateException("MDCAdapter cannot be null. See also " + NULL_MDCA_URL);
-        }
-        mdcAdapter.remove(key);
+        mdcAdapterNullCheck();
+        getMDCAdapter().remove(key);
     }
 
     /**
      * Clear all entries in the MDC of the underlying implementation.
      */
     public static void clear() {
-        if (mdcAdapter == null) {
-            throw new IllegalStateException("MDCAdapter cannot be null. See also " + NULL_MDCA_URL);
-        }
-        mdcAdapter.clear();
+        mdcAdapterNullCheck();
+        getMDCAdapter().clear();
     }
 
     /**
@@ -216,10 +225,8 @@ public class MDC {
      * @since 1.5.1
      */
     public static Map<String, String> getCopyOfContextMap() {
-        if (mdcAdapter == null) {
-            throw new IllegalStateException("MDCAdapter cannot be null. See also " + NULL_MDCA_URL);
-        }
-        return mdcAdapter.getCopyOfContextMap();
+        mdcAdapterNullCheck();
+        return getMDCAdapter().getCopyOfContextMap();
     }
 
     /**
@@ -227,25 +234,86 @@ public class MDC {
      * then copying the map passed as parameter. The context map passed as
      * parameter must only contain keys and values of type String.
      * 
+     * Null valued argument is allowed (since SLF4J version 2.0.0).
+     * 
      * @param contextMap
      *          must contain only keys and values of type String
      * @since 1.5.1
      */
     public static void setContextMap(Map<String, String> contextMap) {
-        if (mdcAdapter == null) {
-            throw new IllegalStateException("MDCAdapter cannot be null. See also " + NULL_MDCA_URL);
-        }
-        mdcAdapter.setContextMap(contextMap);
+        mdcAdapterNullCheck();
+        getMDCAdapter().setContextMap(contextMap);
     }
 
     /**
      * Returns the MDCAdapter instance currently in use.
-     * 
+     *
+     * Since 2.0.17, if the MDCAdapter instance is null, then this method set it to use
+     * the adapter returned by the SLF4JProvider. However, in the vast majority of cases
+     * the MDCAdapter will be set earlier (during initialization) by {@link LoggerFactory}.
+     *
      * @return the MDcAdapter instance currently in use.
      * @since 1.4.2
      */
     public static MDCAdapter getMDCAdapter() {
-        return mdcAdapter;
+        if(MDC_ADAPTER == null) {
+            MDC_ADAPTER = getMDCAdapterGivenByProvider();
+        }
+        return MDC_ADAPTER;
     }
 
+    /**
+     * Set MDCAdapter instance to use.
+     *
+     * @since 2.0.17
+     */
+    static void setMDCAdapter(MDCAdapter anMDCAdapter) {
+        if(anMDCAdapter == null) {
+            throw new IllegalStateException(MDC_ADAPTER_CANNOT_BE_NULL_MESSAGE);
+        }
+        MDC_ADAPTER = anMDCAdapter;
+    }
+
+    /**
+     * Push a value into the deque(stack) referenced by 'key'.
+     *      
+     * @param key identifies the appropriate stack
+     * @param value the value to push into the stack
+     * @since 2.0.0
+     */
+    static public void pushByKey(String key, String value) {
+        mdcAdapterNullCheck();
+        getMDCAdapter().pushByKey(key, value);
+    }
+    
+    /**
+     * Pop the <b>stack</b> referenced by 'key' and return the value possibly null.
+     * 
+     * @param key identifies the deque(stack)
+     * @return the value just popped. May be null/
+     * @since 2.0.0
+     */
+    static public String popByKey(String key) {
+        mdcAdapterNullCheck();
+        return getMDCAdapter().popByKey(key);
+    }
+
+    /**
+     * Returns a copy of the <b>deque(stack)</b> referenced by 'key'. May be null.
+     * 
+     * @param key identifies the  stack
+     * @return copy of stack referenced by 'key'. May be null.
+     * 
+     * @since 2.0.0
+     */
+    public Deque<String>  getCopyOfDequeByKey(String key) {
+        mdcAdapterNullCheck();
+        return getMDCAdapter().getCopyOfDequeByKey(key);
+    }
+
+    private static void mdcAdapterNullCheck() {
+        if (getMDCAdapter() == null) {
+            throw new IllegalStateException(MDC_ADAPTER_CANNOT_BE_NULL_MESSAGE);
+        }
+    }
 }

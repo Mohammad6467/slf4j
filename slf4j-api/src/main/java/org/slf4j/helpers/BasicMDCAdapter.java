@@ -1,33 +1,31 @@
-/**
- * Copyright (c) 2004-2011 QOS.ch
+/*
+ * Copyright (C) 2004-2026, QOS.ch (Switzerland)
  * All rights reserved.
  *
- * Permission is hereby granted, free  of charge, to any person obtaining
- * a  copy  of this  software  and  associated  documentation files  (the
- * "Software"), to  deal in  the Software without  restriction, including
- * without limitation  the rights to  use, copy, modify,  merge, publish,
- * distribute,  sublicense, and/or sell  copies of  the Software,  and to
- * permit persons to whom the Software  is furnished to do so, subject to
- * the following conditions:
+ *  Permission is hereby granted, free  of charge, to any person obtaining
+ *  a  copy  of this  software  and  associated  documentation files  (the
+ *  "Software"), to  deal in  the Software without  restriction, including
+ *  without limitation  the rights to  use, copy, modify,  merge, publish,
+ *  distribute,  sublicense, and/or sell  copies of  the Software,  and to
+ *  permit persons to whom the Software  is furnished to do so, subject to
+ *  the following conditions:
  *
- * The  above  copyright  notice  and  this permission  notice  shall  be
- * included in all copies or substantial portions of the Software.
+ *  The  above  copyright  notice  and  this permission  notice  shall  be
+ *  included in all copies or substantial portions of the Software.
  *
- * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
+ *  THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
+ *  EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
+ *  MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
+ *  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ *  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ *  OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
+ *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.slf4j.helpers;
 
 import org.slf4j.spi.MDCAdapter;
 
 import java.util.*;
-import java.util.Map;
 
 /**
  * Basic MDC implementation, which can be used with logging systems that lack
@@ -44,13 +42,15 @@ import java.util.Map;
  */
 public class BasicMDCAdapter implements MDCAdapter {
 
-    private InheritableThreadLocal<Map<String, String>> inheritableThreadLocal = new InheritableThreadLocal<Map<String, String>>() {
+    private final ThreadLocalMapOfStacks threadLocalMapOfDeques = new ThreadLocalMapOfStacks();
+
+    private final InheritableThreadLocal<Map<String, String>> inheritableThreadLocalMap = new InheritableThreadLocal<Map<String, String>>() {
         @Override
         protected Map<String, String> childValue(Map<String, String> parentValue) {
             if (parentValue == null) {
                 return null;
             }
-            return new HashMap<String, String>(parentValue);
+            return new HashMap<>(parentValue);
         }
     };
 
@@ -70,10 +70,10 @@ public class BasicMDCAdapter implements MDCAdapter {
         if (key == null) {
             throw new IllegalArgumentException("key cannot be null");
         }
-        Map<String, String> map = inheritableThreadLocal.get();
+        Map<String, String> map = inheritableThreadLocalMap.get();
         if (map == null) {
-            map = new HashMap<String, String>();
-            inheritableThreadLocal.set(map);
+            map = new HashMap<>();
+            inheritableThreadLocalMap.set(map);
         }
         map.put(key, val);
     }
@@ -82,7 +82,7 @@ public class BasicMDCAdapter implements MDCAdapter {
      * Get the context identified by the <code>key</code> parameter.
      */
     public String get(String key) {
-        Map<String, String> map = inheritableThreadLocal.get();
+        Map<String, String> map = inheritableThreadLocalMap.get();
         if ((map != null) && (key != null)) {
             return map.get(key);
         } else {
@@ -91,10 +91,10 @@ public class BasicMDCAdapter implements MDCAdapter {
     }
 
     /**
-     * Remove the the context identified by the <code>key</code> parameter.
+     * Remove the context identified by the <code>key</code> parameter.
      */
     public void remove(String key) {
-        Map<String, String> map = inheritableThreadLocal.get();
+        Map<String, String> map = inheritableThreadLocalMap.get();
         if (map != null) {
             map.remove(key);
         }
@@ -104,10 +104,10 @@ public class BasicMDCAdapter implements MDCAdapter {
      * Clear all entries in the MDC.
      */
     public void clear() {
-        Map<String, String> map = inheritableThreadLocal.get();
+        Map<String, String> map = inheritableThreadLocalMap.get();
         if (map != null) {
             map.clear();
-            inheritableThreadLocal.remove();
+            inheritableThreadLocalMap.remove();
         }
     }
 
@@ -118,7 +118,7 @@ public class BasicMDCAdapter implements MDCAdapter {
      * @return the keys in the MDC
      */
     public Set<String> getKeys() {
-        Map<String, String> map = inheritableThreadLocal.get();
+        Map<String, String> map = inheritableThreadLocalMap.get();
         if (map != null) {
             return map.keySet();
         } else {
@@ -132,15 +132,38 @@ public class BasicMDCAdapter implements MDCAdapter {
      *
      */
     public Map<String, String> getCopyOfContextMap() {
-        Map<String, String> oldMap = inheritableThreadLocal.get();
+        Map<String, String> oldMap = inheritableThreadLocalMap.get();
         if (oldMap != null) {
-            return new HashMap<String, String>(oldMap);
+            return new HashMap<>(oldMap);
         } else {
             return null;
         }
     }
 
     public void setContextMap(Map<String, String> contextMap) {
-        inheritableThreadLocal.set(new HashMap<String, String>(contextMap));
+        Map<String, String> copy = null;
+        if (contextMap != null) {
+            copy = new HashMap<>(contextMap);
+        }
+        inheritableThreadLocalMap.set(copy);
+    }
+
+    @Override
+    public void pushByKey(String key, String value) {
+        threadLocalMapOfDeques.pushByKey(key, value);
+    }
+
+    @Override
+    public String popByKey(String key) {
+        return threadLocalMapOfDeques.popByKey(key);    
+     }
+
+    @Override
+    public Deque<String> getCopyOfDequeByKey(String key) {
+        return threadLocalMapOfDeques.getCopyOfDequeByKey(key);
+    }
+    @Override
+    public void clearDequeByKey(String key) {
+        threadLocalMapOfDeques.clearDequeByKey(key);
     }
 }

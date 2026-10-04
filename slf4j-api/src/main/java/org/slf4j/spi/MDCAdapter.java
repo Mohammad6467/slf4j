@@ -1,29 +1,29 @@
-/**
- * Copyright (c) 2004-2011 QOS.ch
+/*
+ * Copyright (C) 2004-2026, QOS.ch (Switzerland)
  * All rights reserved.
  *
- * Permission is hereby granted, free  of charge, to any person obtaining
- * a  copy  of this  software  and  associated  documentation files  (the
- * "Software"), to  deal in  the Software without  restriction, including
- * without limitation  the rights to  use, copy, modify,  merge, publish,
- * distribute,  sublicense, and/or sell  copies of  the Software,  and to
- * permit persons to whom the Software  is furnished to do so, subject to
- * the following conditions:
+ *  Permission is hereby granted, free  of charge, to any person obtaining
+ *  a  copy  of this  software  and  associated  documentation files  (the
+ *  "Software"), to  deal in  the Software without  restriction, including
+ *  without limitation  the rights to  use, copy, modify,  merge, publish,
+ *  distribute,  sublicense, and/or sell  copies of  the Software,  and to
+ *  permit persons to whom the Software  is furnished to do so, subject to
+ *  the following conditions:
  *
- * The  above  copyright  notice  and  this permission  notice  shall  be
- * included in all copies or substantial portions of the Software.
+ *  The  above  copyright  notice  and  this permission  notice  shall  be
+ *  included in all copies or substantial portions of the Software.
  *
- * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
+ *  THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
+ *  EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
+ *  MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
+ *  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ *  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ *  OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
+ *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.slf4j.spi;
 
+import java.util.Deque;
 import java.util.Map;
 
 /**
@@ -55,7 +55,7 @@ public interface MDCAdapter {
     public String get(String key);
 
     /**
-     * Remove the the context identified by the <code>key</code> parameter. 
+     * Remove the context identified by the <code>key</code> parameter.
      * The <code>key</code> parameter cannot be null. 
      * 
      * <p>
@@ -83,9 +83,50 @@ public interface MDCAdapter {
      * map and then copying the map passed as parameter. The context map 
      * parameter must only contain keys and values of type String.
      * 
+     * Implementations must support null valued map passed as parameter.
+     * 
      * @param contextMap must contain only keys and values of type String
      * 
      * @since 1.5.1
      */
     public void setContextMap(Map<String, String> contextMap);
+    
+    /**
+     * Push a value into the <b>deque(stack)</b> referenced by 'key'.
+     *      
+     * @param key identifies the appropriate stack
+     * @param value the value to push into the stack
+     * @since 2.0.0
+     */
+    public void pushByKey(String key, String value);
+    
+    /**
+     * Pop the <b>stack</b> referenced by 'key' and return the value possibly null.
+     * 
+     * @param key identifies the deque(stack)
+     * @return the value just popped. May be null/
+     * @since 2.0.0
+     */
+    public String popByKey(String key);
+
+    /**
+     * Returns a copy of the <b>deque(stack)</b> referenced by 'key'. May be null.
+     * 
+     * @param key identifies the  stack
+     * @return copy of stack referenced by 'key'. May be null.
+     * 
+     * @since 2.0.0
+     */
+    public Deque<String>  getCopyOfDequeByKey(String key);
+    
+
+    /**
+     * Clear the <b>deque(stack)</b> referenced by 'key'.
+     * 
+     * @param key identifies the  stack
+     * 
+     * @since 2.0.0
+     */
+    public void clearDequeByKey(String key);
+    
 }

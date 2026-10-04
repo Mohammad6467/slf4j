@@ -1,26 +1,25 @@
-/**
- * Copyright (c) 2004-2011 QOS.ch
+/*
+ * Copyright (C) 2004-2026, QOS.ch (Switzerland)
  * All rights reserved.
  *
- * Permission is hereby granted, free  of charge, to any person obtaining
- * a  copy  of this  software  and  associated  documentation files  (the
- * "Software"), to  deal in  the Software without  restriction, including
- * without limitation  the rights to  use, copy, modify,  merge, publish,
- * distribute,  sublicense, and/or sell  copies of  the Software,  and to
- * permit persons to whom the Software  is furnished to do so, subject to
- * the following conditions:
+ *  Permission is hereby granted, free  of charge, to any person obtaining
+ *  a  copy  of this  software  and  associated  documentation files  (the
+ *  "Software"), to  deal in  the Software without  restriction, including
+ *  without limitation  the rights to  use, copy, modify,  merge, publish,
+ *  distribute,  sublicense, and/or sell  copies of  the Software,  and to
+ *  permit persons to whom the Software  is furnished to do so, subject to
+ *  the following conditions:
  *
- * The  above  copyright  notice  and  this permission  notice  shall  be
- * included in all copies or substantial portions of the Software.
+ *  The  above  copyright  notice  and  this permission  notice  shall  be
+ *  included in all copies or substantial portions of the Software.
  *
- * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
+ *  THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
+ *  EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
+ *  MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
+ *  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ *  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ *  OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
+ *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.slf4j;
 
@@ -29,14 +28,16 @@ import java.util.Iterator;
 
 /**
  * Markers are named objects used to enrich log statements. Conforming logging
- * system Implementations of SLF4J determine how information conveyed by markers
- * are used, if at all. In particular, many conforming logging systems ignore
- * marker data.
- * 
- * <p>
- * Markers can contain references to other markers, which in turn may contain 
- * references of their own.
- * 
+ * system implementations of SLF4J should determine how information conveyed by
+ * any markers are used, if at all. Many conforming logging systems ignore marker
+ * data entirely.
+ *
+ * <p>Markers can contain references to nested markers, which in turn may
+ * contain references of their own. Note that the fluent API (new in 2.0) allows adding
+ * multiple markers to a logging statement. It is often preferable to use
+ * multiple markers instead of nested markers.
+ * </p>
+ *
  * @author Ceki G&uuml;lc&uuml;
  */
 public interface Marker extends Serializable {
@@ -60,11 +61,17 @@ public interface Marker extends Serializable {
 
     /**
      * Add a reference to another Marker.
-     * 
+     *
+     * <p>Note that the fluent API allows adding multiple markers to a logging statement.
+     * It is often preferable to use multiple markers instead of nested markers.
+     * </p>
+     *
      * @param reference
      *                a reference to another marker
      * @throws IllegalArgumentException
      *                 if 'reference' is null
+     *
+     * @deprecated Markers are now immutable and no longer support children.
      */
     public void add(Marker reference);
 
@@ -74,11 +81,13 @@ public interface Marker extends Serializable {
      * @param reference
      *                the marker reference to remove
      * @return true if reference could be found and removed, false otherwise.
+     *
+     * @deprecated Markers are now immutable and no longer support children.
      */
     public boolean remove(Marker reference);
 
     /**
-     * @deprecated Replaced by {@link #hasReferences()}.
+     * @deprecated Markers are now immutable and no longer support children.
      */
     @Deprecated
     public boolean hasChildren();
@@ -87,6 +96,7 @@ public interface Marker extends Serializable {
      * Does this marker have any references?
      * 
      * @return true if this marker has one or more references, false otherwise.
+     * @deprecated Markers are now immutable and no longer support children.
      */
     public boolean hasReferences();
 
@@ -95,6 +105,7 @@ public interface Marker extends Serializable {
      * marker. An empty iterator is returned when this marker has no references.
      * 
      * @return Iterator over the references of this marker
+     * @deprecated Markers are now immutable and no longer support children.
      */
     public Iterator<Marker> iterator();
 
@@ -108,6 +119,7 @@ public interface Marker extends Serializable {
      * @throws IllegalArgumentException
      *                 if 'other' is null
      * @return Whether this marker contains the other marker.
+     * @deprecated Markers are now immutable and no longer support children.
      */
     public boolean contains(Marker other);
 
@@ -118,6 +130,7 @@ public interface Marker extends Serializable {
      * 
      * @param name The marker name to test for inclusion.
      * @return Whether this marker contains the other marker.
+     * @deprecated Markers are now immutable and no longer support children.
      */
     public boolean contains(String name);
 

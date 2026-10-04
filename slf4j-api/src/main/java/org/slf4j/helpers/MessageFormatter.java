@@ -1,26 +1,25 @@
-/**
- * Copyright (c) 2004-2011 QOS.ch
+/*
+ * Copyright (C) 2004-2026, QOS.ch (Switzerland)
  * All rights reserved.
  *
- * Permission is hereby granted, free  of charge, to any person obtaining
- * a  copy  of this  software  and  associated  documentation files  (the
- * "Software"), to  deal in  the Software without  restriction, including
- * without limitation  the rights to  use, copy, modify,  merge, publish,
- * distribute,  sublicense, and/or sell  copies of  the Software,  and to
- * permit persons to whom the Software  is furnished to do so, subject to
- * the following conditions:
+ *  Permission is hereby granted, free  of charge, to any person obtaining
+ *  a  copy  of this  software  and  associated  documentation files  (the
+ *  "Software"), to  deal in  the Software without  restriction, including
+ *  without limitation  the rights to  use, copy, modify,  merge, publish,
+ *  distribute,  sublicense, and/or sell  copies of  the Software,  and to
+ *  permit persons to whom the Software  is furnished to do so, subject to
+ *  the following conditions:
  *
- * The  above  copyright  notice  and  this permission  notice  shall  be
- * included in all copies or substantial portions of the Software.
+ *  The  above  copyright  notice  and  this permission  notice  shall  be
+ *  included in all copies or substantial portions of the Software.
  *
- * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
+ *  THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
+ *  EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
+ *  MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
+ *  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ *  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ *  OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
+ *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.slf4j.helpers;
 
@@ -81,7 +80,7 @@ import java.util.Map;
  * will return the string "File name is C:\file.zip".
  *
  * <p>
- * The formatting conventions are different than those of {@link MessageFormat}
+ * The formatting conventions are different from those of {@link MessageFormat}
  * which ships with the Java platform. This is justified by the fact that
  * SLF4J's implementation is 10 times faster than that of {@link MessageFormat}.
  * This local performance difference is both measurable and significant in the
@@ -151,7 +150,6 @@ final public class MessageFormatter {
         return arrayFormat(messagePattern, new Object[] { arg1, arg2 });
     }
 
-
     final public static FormattingTuple arrayFormat(final String messagePattern, final Object[] argArray) {
         Throwable throwableCandidate = MessageFormatter.getThrowableCandidate(argArray);
         Object[] args = argArray;
@@ -168,14 +166,14 @@ final public class MessageFormatter {
      * @param argArray
      */
     final public static String basicArrayFormat(final String messagePattern, final Object[] argArray) {
-    	FormattingTuple ft = arrayFormat(messagePattern, argArray, null);
-    	return ft.getMessage();
+        FormattingTuple ft = arrayFormat(messagePattern, argArray, null);
+        return ft.getMessage();
     }
-    
+
     public static String basicArrayFormat(NormalizedParameters np) {
-		return basicArrayFormat(np.getMessage(), np.getArguments());
-	}
-    
+        return basicArrayFormat(np.getMessage(), np.getArguments());
+    }
+
     final public static FormattingTuple arrayFormat(final String messagePattern, final Object[] argArray, Throwable throwable) {
 
         if (messagePattern == null) {
@@ -217,13 +215,13 @@ final public class MessageFormatter {
                         // itself escaped: "abc x:\\{}"
                         // we have to consume one backward slash
                         sbuf.append(messagePattern, i, j - 1);
-                        deeplyAppendParameter(sbuf, argArray[L], new HashMap<Object[], Object>());
+                        deeplyAppendParameter(sbuf, argArray[L], new HashMap<>());
                         i = j + 2;
                     }
                 } else {
                     // normal case
                     sbuf.append(messagePattern, i, j);
-                    deeplyAppendParameter(sbuf, argArray[L], new HashMap<Object[], Object>());
+                    deeplyAppendParameter(sbuf, argArray[L], new HashMap<>());
                     i = j + 2;
                 }
             }
@@ -292,7 +290,7 @@ final public class MessageFormatter {
             String oAsString = o.toString();
             sbuf.append(oAsString);
         } catch (Throwable t) {
-            Util.report("SLF4J: Failed toString() invocation on an object of type [" + o.getClass().getName() + "]", t);
+            Reporter.error("Failed toString() invocation on an object of type [" + o.getClass().getName() + "]", t);
             sbuf.append("[FAILED toString()]");
         }
 
@@ -404,30 +402,28 @@ final public class MessageFormatter {
         sbuf.append(']');
     }
 
-	/**
-	 * Helper method to determine if an {@link Object} array contains a {@link Throwable} as last element
-	 *
-	 * @param argArray
-	 *          The arguments off which we want to know if it contains a {@link Throwable} as last element
-	 * @return if the last {@link Object} in argArray is a {@link Throwable} this method will return it,
-	 *          otherwise it returns null
-	 */
-	public static Throwable getThrowableCandidate(final Object[] argArray) {
-		return NormalizedParameters.getThrowableCandidate(argArray);
+    /**
+     * Helper method to determine if an {@link Object} array contains a {@link Throwable} as last element
+     *
+     * @param argArray
+     *          The arguments off which we want to know if it contains a {@link Throwable} as last element
+     * @return if the last {@link Object} in argArray is a {@link Throwable} this method will return it,
+     *          otherwise it returns null
+     */
+    public static Throwable getThrowableCandidate(final Object[] argArray) {
+        return NormalizedParameters.getThrowableCandidate(argArray);
     }
-	
-	/**
-	 * Helper method to get all but the last element of an array
-	 *
-	 * @param argArray
-	 *          The arguments from which we want to remove the last element
-	 *
-	 * @return a copy of the array without the last element
-	 */
-	public static Object[] trimmedCopy(final Object[] argArray) {
-		return NormalizedParameters.trimmedCopy(argArray);
-	}
 
-	
+    /**
+     * Helper method to get all but the last element of an array
+     *
+     * @param argArray
+     *          The arguments from which we want to remove the last element
+     *
+     * @return a copy of the array without the last element
+     */
+    public static Object[] trimmedCopy(final Object[] argArray) {
+        return NormalizedParameters.trimmedCopy(argArray);
+    }
 
 }

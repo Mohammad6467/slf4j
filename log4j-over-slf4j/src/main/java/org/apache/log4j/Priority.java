@@ -82,7 +82,7 @@ public class Priority {
        Instantiate a level object.
        @param
      */
-    
+
     /**
      * Instantiate a level object. 
      * 
@@ -117,7 +117,6 @@ public class Priority {
         return syslogEquivalent;
     }
 
-  
     /**
      * Returns <code>true</code> if this level has a higher or equal
      *  level than the level passed as argument, <code>false</code>
@@ -136,7 +135,7 @@ public class Priority {
     /**
        Return all possible priorities as an array of Level objects in
        descending order.
-
+    
        @deprecated This method will be removed with no replacement.
        @return array of all possible priorities
     */
@@ -152,7 +151,6 @@ public class Priority {
         return levelStr;
     }
 
-    
     /**
      * Returns the integer representation of this level.
      *
@@ -189,7 +187,7 @@ public class Priority {
      * 
      * @param val an integer value
      * @param defaultPriority a default priority value
-     * @return correspoding Priority value
+     * @return corresponding Priority value
      */
     @Deprecated
     public static Priority toPriority(int val, Priority defaultPriority) {

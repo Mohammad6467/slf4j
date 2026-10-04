@@ -1,26 +1,25 @@
-/**
- * Copyright (c) 2004-2011 QOS.ch
+/*
+ * Copyright (C) 2004-2026, QOS.ch (Switzerland)
  * All rights reserved.
  *
- * Permission is hereby granted, free  of charge, to any person obtaining
- * a  copy  of this  software  and  associated  documentation files  (the
- * "Software"), to  deal in  the Software without  restriction, including
- * without limitation  the rights to  use, copy, modify,  merge, publish,
- * distribute,  sublicense, and/or sell  copies of  the Software,  and to
- * permit persons to whom the Software  is furnished to do so, subject to
- * the following conditions:
+ *  Permission is hereby granted, free  of charge, to any person obtaining
+ *  a  copy  of this  software  and  associated  documentation files  (the
+ *  "Software"), to  deal in  the Software without  restriction, including
+ *  without limitation  the rights to  use, copy, modify,  merge, publish,
+ *  distribute,  sublicense, and/or sell  copies of  the Software,  and to
+ *  permit persons to whom the Software  is furnished to do so, subject to
+ *  the following conditions:
  *
- * The  above  copyright  notice  and  this permission  notice  shall  be
- * included in all copies or substantial portions of the Software.
+ *  The  above  copyright  notice  and  this permission  notice  shall  be
+ *  included in all copies or substantial portions of the Software.
  *
- * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
+ *  THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
+ *  EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
+ *  MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
+ *  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ *  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ *  OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
+ *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 /**
  *
@@ -135,8 +134,8 @@ public class LogTransformer implements ClassFileTransformer {
         }
     }
 
-    private String level;
-    private String levelEnabled;
+    private final String level;
+    private final String levelEnabled;
 
     private LogTransformer(Builder builder) {
         String s = "WARNING: javassist not available on classpath for javaagent, log statements will not be added";
@@ -156,10 +155,10 @@ public class LogTransformer implements ClassFileTransformer {
         this.levelEnabled = "is" + builder.level.substring(0, 1).toUpperCase() + builder.level.substring(1) + "Enabled";
     }
 
-    private boolean addEntryExit;
+    private final boolean addEntryExit;
     // private boolean addVariableAssignment;
-    private boolean verbose;
-    private String[] ignore;
+    private final boolean verbose;
+    private final String[] ignore;
 
     public byte[] transform(ClassLoader loader, String className, Class<?> clazz, ProtectionDomain domain, byte[] bytes) {
 
@@ -187,8 +186,8 @@ public class LogTransformer implements ClassFileTransformer {
     private byte[] transform0(String className, Class<?> clazz, ProtectionDomain domain, byte[] bytes) {
 
         try {
-            for (int i = 0; i < ignore.length; i++) {
-                if (className.startsWith(ignore[i])) {
+            for (String s : ignore) {
+                if (className.startsWith(s)) {
                     return bytes;
                 }
             }
@@ -263,9 +262,9 @@ public class LogTransformer implements ClassFileTransformer {
                 // instrumented too.
 
                 CtBehavior[] methods = cl.getDeclaredBehaviors();
-                for (int i = 0; i < methods.length; i++) {
-                    if (methods[i].isEmpty() == false) {
-                        doMethod(methods[i]);
+                for (CtBehavior method : methods) {
+                    if (method.isEmpty() == false) {
+                        doMethod(method);
                     }
                 }
                 b = cl.toBytecode();

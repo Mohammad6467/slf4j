@@ -1,26 +1,25 @@
-/**
- * Copyright (c) 2004-2011 QOS.ch
+/*
+ * Copyright (C) 2004-2026, QOS.ch (Switzerland)
  * All rights reserved.
  *
- * Permission is hereby granted, free  of charge, to any person obtaining
- * a  copy  of this  software  and  associated  documentation files  (the
- * "Software"), to  deal in  the Software without  restriction, including
- * without limitation  the rights to  use, copy, modify,  merge, publish,
- * distribute,  sublicense, and/or sell  copies of  the Software,  and to
- * permit persons to whom the Software  is furnished to do so, subject to
- * the following conditions:
+ *  Permission is hereby granted, free  of charge, to any person obtaining
+ *  a  copy  of this  software  and  associated  documentation files  (the
+ *  "Software"), to  deal in  the Software without  restriction, including
+ *  without limitation  the rights to  use, copy, modify,  merge, publish,
+ *  distribute,  sublicense, and/or sell  copies of  the Software,  and to
+ *  permit persons to whom the Software  is furnished to do so, subject to
+ *  the following conditions:
  *
- * The  above  copyright  notice  and  this permission  notice  shall  be
- * included in all copies or substantial portions of the Software.
+ *  The  above  copyright  notice  and  this permission  notice  shall  be
+ *  included in all copies or substantial portions of the Software.
  *
- * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
+ *  THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
+ *  EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
+ *  MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
+ *  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ *  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ *  OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
+ *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 package org.slf4j.helpers;
 
@@ -43,12 +42,12 @@ import org.slf4j.event.SubstituteLoggingEvent;
 public class SubstituteLoggerFactory implements ILoggerFactory {
 
     volatile boolean postInitialization = false;
-    
-    final Map<String, SubstituteLogger> loggers = new ConcurrentHashMap<String, SubstituteLogger>();
 
-    final LinkedBlockingQueue<SubstituteLoggingEvent> eventQueue = new LinkedBlockingQueue<SubstituteLoggingEvent>();
+    final Map<String, SubstituteLogger> loggers = new ConcurrentHashMap<>();
 
-    synchronized public  Logger getLogger(String name) {
+    final LinkedBlockingQueue<SubstituteLoggingEvent> eventQueue = new LinkedBlockingQueue<>();
+
+    synchronized public Logger getLogger(String name) {
         SubstituteLogger logger = loggers.get(name);
         if (logger == null) {
             logger = new SubstituteLogger(name, eventQueue, postInitialization);
@@ -58,11 +57,11 @@ public class SubstituteLoggerFactory implements ILoggerFactory {
     }
 
     public List<String> getLoggerNames() {
-        return new ArrayList<String>(loggers.keySet());
+        return new ArrayList<>(loggers.keySet());
     }
 
     public List<SubstituteLogger> getLoggers() {
-        return new ArrayList<SubstituteLogger>(loggers.values());
+        return new ArrayList<>(loggers.values());
     }
 
     public LinkedBlockingQueue<SubstituteLoggingEvent> getEventQueue() {
@@ -70,9 +69,9 @@ public class SubstituteLoggerFactory implements ILoggerFactory {
     }
 
     public void postInitialization() {
-    	postInitialization = true;
+        postInitialization = true;
     }
-    
+
     public void clear() {
         loggers.clear();
         eventQueue.clear();

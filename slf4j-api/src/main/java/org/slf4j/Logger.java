@@ -1,30 +1,34 @@
-/**
- * Copyright (c) 2004-2011 QOS.ch
+/*
+ * Copyright (C) 2004-2026, QOS.ch (Switzerland)
  * All rights reserved.
  *
- * Permission is hereby granted, free  of charge, to any person obtaining
- * a  copy  of this  software  and  associated  documentation files  (the
- * "Software"), to  deal in  the Software without  restriction, including
- * without limitation  the rights to  use, copy, modify,  merge, publish,
- * distribute,  sublicense, and/or sell  copies of  the Software,  and to
- * permit persons to whom the Software  is furnished to do so, subject to
- * the following conditions:
+ *  Permission is hereby granted, free  of charge, to any person obtaining
+ *  a  copy  of this  software  and  associated  documentation files  (the
+ *  "Software"), to  deal in  the Software without  restriction, including
+ *  without limitation  the rights to  use, copy, modify,  merge, publish,
+ *  distribute,  sublicense, and/or sell  copies of  the Software,  and to
+ *  permit persons to whom the Software  is furnished to do so, subject to
+ *  the following conditions:
  *
- * The  above  copyright  notice  and  this permission  notice  shall  be
- * included in all copies or substantial portions of the Software.
+ *  The  above  copyright  notice  and  this permission  notice  shall  be
+ *  included in all copies or substantial portions of the Software.
  *
- * THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
- * EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
- * MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
- * NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
- * LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
- * OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
- * WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
- *
+ *  THE  SOFTWARE IS  PROVIDED  "AS  IS", WITHOUT  WARRANTY  OF ANY  KIND,
+ *  EXPRESS OR  IMPLIED, INCLUDING  BUT NOT LIMITED  TO THE  WARRANTIES OF
+ *  MERCHANTABILITY,    FITNESS    FOR    A   PARTICULAR    PURPOSE    AND
+ *  NONINFRINGEMENT. IN NO EVENT SHALL THE AUTHORS OR COPYRIGHT HOLDERS BE
+ *  LIABLE FOR ANY CLAIM, DAMAGES OR OTHER LIABILITY, WHETHER IN AN ACTION
+ *  OF CONTRACT, TORT OR OTHERWISE,  ARISING FROM, OUT OF OR IN CONNECTION
+ *  WITH THE SOFTWARE OR THE USE OR OTHER DEALINGS IN THE SOFTWARE.
  */
 
 package org.slf4j;
 
+import static org.slf4j.event.EventConstants.DEBUG_INT;
+import static org.slf4j.event.EventConstants.ERROR_INT;
+import static org.slf4j.event.EventConstants.INFO_INT;
+import static org.slf4j.event.EventConstants.TRACE_INT;
+import static org.slf4j.event.EventConstants.WARN_INT;
 import static org.slf4j.event.Level.DEBUG;
 import static org.slf4j.event.Level.ERROR;
 import static org.slf4j.event.Level.INFO;
@@ -32,6 +36,7 @@ import static org.slf4j.event.Level.TRACE;
 import static org.slf4j.event.Level.WARN;
 
 import org.slf4j.event.Level;
+import org.slf4j.helpers.CheckReturnValue;
 import org.slf4j.spi.DefaultLoggingEventBuilder;
 import org.slf4j.spi.LoggingEventBuilder;
 import org.slf4j.spi.NOPLoggingEventBuilder;
@@ -41,7 +46,7 @@ import org.slf4j.spi.NOPLoggingEventBuilder;
  * It is expected that logging takes place through concrete implementations
  * of this interface.
  * 
- * <h3>Typical usage pattern:</h3>
+ * <H3>Typical usage pattern:</H3>
  * <pre>
  * import org.slf4j.Logger;
  * import org.slf4j.LoggerFactory;
@@ -56,29 +61,29 @@ import org.slf4j.spi.NOPLoggingEventBuilder;
  *     oldT = t;
  *     t = temperature;
  *     <span style="color:green">logger.debug("Temperature set to {}. Old temperature was {}.", t, oldT);</span>
- *     if(temperature.intValue() &gt; 50) {
+ *     if (temperature.intValue() &gt; 50) {
  *       <span style="color:green">logger.info("Temperature has risen above 50 degrees.");</span>
  *     }
  *   }
  * }
  * </pre>
  *
- * <p>Note that version 2.0 of the SLF4J API introduces a <a href="../../../manual.html#fluent">fluent api</a>,
- * the most significant API change to occur in the last 20 years.
+ * <p>Note that version 2.0 of the SLF4J API introduces a <a href="https://www.slf4j.org/manual.html#fluent">fluent api</a>,
+ * the most significant API change to occur in a long time.
  *
- * <p>Be sure to read the FAQ entry relating to <a href="../../../faq.html#logging_performance">parameterized
- * logging</a>. Note that logging statements can be parameterized in
- * <a href="../../../faq.html#paramException">presence of an exception/throwable</a>.
+ * <p>Be sure to read the FAQ entry relating to <a href="https://www.slf4j.org/faq.html#logging_performance">parameterized
+ * logging</a>. Note that if the last argument in a parameterized log statement is a throwable,
+ * it will be <a href="https://www.slf4j.org/faq.html#paramException">interpreted as such</a>.
  *
  * <p>Once you are comfortable using loggers, i.e. instances of this interface, consider using
- * <a href="MDC.html">MDC</a> as well as <a href="Marker.html">Markers</a>.
+ * {@link MDC} as well as {@link Marker}.
  *
  * @author Ceki G&uuml;lc&uuml;
  */
 public interface Logger {
 
     /**
-     * Case insensitive String constant used to retrieve the name of the root logger.
+     * Case-insensitive String constant used to retrieve the name of the root logger.
      *
      * @since 1.3
      */
@@ -91,15 +96,67 @@ public interface Logger {
     public String getName();
 
     /**
-     * Make a new {@link LoggingEventBuilder} instance as appropriate for this logger and the 
-     * desired {@link Level} passed as parameter. 
-     * 
+     * <p>Make a new {@link LoggingEventBuilder} instance as appropriate for this logger implementation.
+     * This default implementation always returns a new instance of {@link DefaultLoggingEventBuilder}.</p>
+     * <p></p>
+     * <p>This method is intended to be used by logging systems implementing the SLF4J API and <b>not</b>
+     * by end users.</p>
+     * <p></p>
+     * <p>Also note that a {@link LoggingEventBuilder} instance should be built for all levels,
+     * independently of the level argument. In other words, this method is an <b>unconditional</b>
+     * constructor for the {@link LoggingEventBuilder} appropriate for this logger implementation.</p>
+     * <p></p>
+     * @param level desired level for the event builder
+     * @return a new {@link LoggingEventBuilder} instance as appropriate for <b>this</b> logger
+     * @since 2.0
+     */
+    default public LoggingEventBuilder makeLoggingEventBuilder(Level level) {
+        return new DefaultLoggingEventBuilder(this, level);
+    }
+
+    /**
+     * <p>Make a new {@link LoggingEventBuilder} instance as appropriate for this logger and the
+     * desired {@link Level} passed as parameter. If this Logger is disabled for the given Level, then
+     * a {@link  NOPLoggingEventBuilder} is returned.  This is the main optimization in the fluent API.</p>
+     *
+     *
      * @param level desired level for the event builder
      * @return a new {@link LoggingEventBuilder} instance as appropriate for this logger
      * @since 2.0
      */
-    default public LoggingEventBuilder makeLoggingEventBuilder(Level level) {
-    	return new DefaultLoggingEventBuilder(this, level);
+    @CheckReturnValue
+    default public LoggingEventBuilder atLevel(Level level) {
+        if (isEnabledForLevel(level)) {
+            return makeLoggingEventBuilder(level);
+        } else {
+            return NOPLoggingEventBuilder.singleton();
+        }
+    }
+
+    
+    
+    /**
+     * Returns whether this Logger is enabled for a given {@link Level}. 
+     * 
+     * @param level
+     * @return true if enabled, false otherwise.
+     */
+    default public boolean isEnabledForLevel(Level level) {
+        int levelInt = level.toInt();
+        switch (levelInt) {
+        case (TRACE_INT):
+            return isTraceEnabled();
+        case (DEBUG_INT):
+            return isDebugEnabled();
+        case (INFO_INT):
+            return isInfoEnabled();
+        case (WARN_INT):
+            return isWarnEnabled();
+        case (ERROR_INT):
+            return isErrorEnabled();
+        default:
+            throw new IllegalArgumentException("Level [" + level + "] not recognized.");
+        }
     }
 
     /**
@@ -185,19 +242,23 @@ public interface Logger {
     public boolean isTraceEnabled(Marker marker);
 
     /**
-     * Entry point for fluent-logging for {@link org.slf4j.event.Level#TRACE} level. 
-     *  
+     * Entry point for fluent-logging for {@link org.slf4j.event.Level#TRACE} level.
+     *
+     * <p>If this logger is disabled for the TRACE level, then a {@link NOPLoggingEventBuilder} instance is returned.
+     * As the name indicates, this builder does not perform any operations. This is the main optimization in the fluent API.</p>
+     *
      * @return LoggingEventBuilder instance as appropriate for level TRACE
      * @since 2.0
      */
+    @CheckReturnValue
     default public LoggingEventBuilder atTrace() {
-    	if(isTraceEnabled()) {
-       		return makeLoggingEventBuilder(TRACE);
-    	} else {
-    		return NOPLoggingEventBuilder.singleton();
-    	}
+        if (isTraceEnabled()) {
+            return makeLoggingEventBuilder(TRACE);
+        } else {
+            return NOPLoggingEventBuilder.singleton();
+        }
     }
-    
+
     /**
      * Log a message with the specific Marker at the TRACE level.
      *
@@ -380,22 +441,24 @@ public interface Logger {
      */
     public void debug(Marker marker, String msg, Throwable t);
 
-
-    
     /**
      * Entry point for fluent-logging for {@link org.slf4j.event.Level#DEBUG} level. 
-     *  
+     *
+     * <p>If this logger is disabled for the DEBUG level, then a {@link NOPLoggingEventBuilder} instance is returned.
+     * As the name indicates, this builder does not perform any operations. This is the main optimization in the fluent API.</p>
+     *
      * @return LoggingEventBuilder instance as appropriate for level DEBUG
      * @since 2.0
      */
+    @CheckReturnValue
     default public LoggingEventBuilder atDebug() {
-    	if(isDebugEnabled()) {
-    		return makeLoggingEventBuilder(DEBUG);
-    	} else {
-    		return NOPLoggingEventBuilder.singleton();
-    	}
+        if (isDebugEnabled()) {
+            return makeLoggingEventBuilder(DEBUG);
+        } else {
+            return NOPLoggingEventBuilder.singleton();
+        }
     }
-    
+
     /**
      * Is the logger instance enabled for the INFO level?
      *
@@ -466,7 +529,8 @@ public interface Logger {
      * data is also taken into consideration.
      *
      * @param marker The marker data to take into consideration
-     * @return true if this logger is warn enabled, false otherwise 
+     * @return true if this Logger is enabled for the INFO level,
+     *         false otherwise.
      */
     public boolean isInfoEnabled(Marker marker);
 
@@ -523,19 +587,22 @@ public interface Logger {
 
     /**
      * Entry point for fluent-logging for {@link org.slf4j.event.Level#INFO} level. 
-     *  
+     *
+     * <p>If this logger is disabled for the INFO level, then a {@link NOPLoggingEventBuilder} instance is returned.
+     * As the name indicates, this builder does not perform any operations.  This is the main optimization in the fluent API.</p>
+
      * @return LoggingEventBuilder instance as appropriate for level INFO
      * @since 2.0
      */
+    @CheckReturnValue
     default public LoggingEventBuilder atInfo() {
-    	if(isInfoEnabled()) {
-       		return makeLoggingEventBuilder(INFO);
-    	} else {
-    		return NOPLoggingEventBuilder.singleton();
-    	}
+        if (isInfoEnabled()) {
+            return makeLoggingEventBuilder(INFO);
+        } else {
+            return NOPLoggingEventBuilder.singleton();
+        }
     }
- 
-    
+
     /**
      * Is the logger instance enabled for the WARN level?
      *
@@ -662,22 +729,24 @@ public interface Logger {
      */
     public void warn(Marker marker, String msg, Throwable t);
 
-    
     /**
      * Entry point for fluent-logging for {@link org.slf4j.event.Level#WARN} level. 
-     *  
+     *
+     * <p>If this logger is disabled for the WARN level, then a {@link NOPLoggingEventBuilder} instance is returned.
+     * As the name indicates, this builder does not perform any operations.  This is the main optimization in the fluent API.</p>
+     *
      * @return LoggingEventBuilder instance as appropriate for level WARN
      * @since 2.0
      */
+    @CheckReturnValue
     default public LoggingEventBuilder atWarn() {
-    	if(isWarnEnabled()) {
-       		return makeLoggingEventBuilder(WARN);
-    	} else {
-    		return NOPLoggingEventBuilder.singleton();
-    	}
+        if (isWarnEnabled()) {
+            return makeLoggingEventBuilder(WARN);
+        } else {
+            return NOPLoggingEventBuilder.singleton();
+        }
     }
 
-    
     /**
      * Is the logger instance enabled for the ERROR level?
      *
@@ -804,21 +873,23 @@ public interface Logger {
      * @param t      the exception (throwable) to log
      */
     public void error(Marker marker, String msg, Throwable t);
-    
-    
-    
+
     /**
      * Entry point for fluent-logging for {@link org.slf4j.event.Level#ERROR} level. 
-     *  
+     *
+     * <p>If this logger is disabled for the ERROR level, then a {@link NOPLoggingEventBuilder} instance is returned.
+     * As the name indicates, this builder does not perform any operations.</p>
+     *
      * @return LoggingEventBuilder instance as appropriate for level ERROR
      * @since 2.0
      */
+    @CheckReturnValue
     default public LoggingEventBuilder atError() {
-    	if(isErrorEnabled()) {
-       		return makeLoggingEventBuilder(ERROR);
-    	} else {
-    		return NOPLoggingEventBuilder.singleton();
-    	}
+        if (isErrorEnabled()) {
+            return makeLoggingEventBuilder(ERROR);
+        } else {
+            return NOPLoggingEventBuilder.singleton();
+        }
     }
 
 }
